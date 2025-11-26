@@ -1,0 +1,89 @@
+###  Positive test: Авторизация пользователя
+# admin token: Authorization: Basic YWRtaW46YWRtaW4=
+
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin"
+}
+
+### Positive test: Создание админом пользователя
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "nkiselchuk",
+  "password": "!P327op56",
+  "role": "USER"
+}
+### Negative test: Нельзя создать админом пользователя с пустым именем
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "",
+  "password": "YWRtaW46YWRtaW4%",
+  "role": "USER"
+}
+
+### Negative test: Нельзя создать админом пользователя с именем меньше 2 и больше 16 символов
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "ad85Jifvjpodfjsp",
+  "password": "YWRtaW46YWRtaW4%",
+  "role": "USER"
+}
+
+### Negative test: Нельзя создать админом пользователя с $%^&*()@#
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "$%^&*()@#",
+  "password": "YWRtaW46YWRtaW4%",
+  "role": "USER"
+}
+
+
+
+#{"id":2,"username":"nkiselchuk","password":"$2a$10$L2wmqj5w24nNEgo6iFiFP.fl6vQiZ.LQxuG5rZs7bdxJ0j2IiEUni","name":null,"role":"USER","accounts":[]}
+
+### Negative test: Нельзя создать админом пользователя с одинаковым именем, запускать 2 раза
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+  "username": "olchik",
+  "password": "!Wjk23@6",
+  "role": "USER"
+}
+
+### Positive test: Создание пользователем аккаунта
+#Получаем токен для nkiselchuk
+# Authorization: Basic bmtpc2VsY2h1azohUDMyN29wNTY=
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "username": "nkiselchuk",
+    "password": "!P327op56"
+}
+###
+POST http://localhost:4111/api/v1/accounts
+Authorization: Basic bmtpc2VsY2h1azohUDMyN29wNTY=
+Content-Type: application/json
+
+
+### Проверка, что аккаунт создан
+GET http://localhost:4111/api/v1/customer/accounts
+Authorization: Basic bmtpc2VsY2h1azohUDMyN29wNTY=
+Content-Type: application/json
