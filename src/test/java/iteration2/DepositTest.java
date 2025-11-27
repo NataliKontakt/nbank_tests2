@@ -85,11 +85,11 @@ public class DepositTest {
         float deposit = 50;
 
         String body = String.format(Locale.US, """
-        {
-          "id": %d,
-          "balance": %f
-        }
-        """, id, deposit);
+                {
+                  "id": %d,
+                  "balance": %f
+                }
+                """, id, deposit);
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
@@ -101,7 +101,8 @@ public class DepositTest {
                 .statusCode(HttpStatus.SC_OK)
                 .body("balance", equalTo(balance + deposit));
     }
-//проверяем сложение не нулевого баланса с депозитом и граничное значение 5000
+
+    //проверяем сложение не нулевого баланса с депозитом и граничное значение 5000
     @Test
     public void userCanMakeDepositNotZeroBalanceTest() {
 //        Создать пользователя
@@ -111,7 +112,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2019",
+                          "username": "kate2024",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -126,7 +127,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2019",
+                          "username": "kate2024",
                           "password": "Kate2000#"
                         }
                         """)
@@ -159,11 +160,11 @@ public class DepositTest {
         float deposit = 50;
 
         String body = String.format(Locale.US, """
-        {
-          "id": %d,
-          "balance": %f
-        }
-        """, id, deposit);
+                {
+                  "id": %d,
+                  "balance": %f
+                }
+                """, id, deposit);
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
@@ -177,11 +178,11 @@ public class DepositTest {
         // вносим депозит еще
         float deposit2 = 5000;
         String body2 = String.format(Locale.US, """
-        {
-          "id": %d,
-          "balance": %f
-        }
-        """, id, deposit2);
+                {
+                  "id": %d,
+                  "balance": %f
+                }
+                """, id, deposit2);
 
         given()
                 .header("Authorization", userAuthHeader)
@@ -195,82 +196,9 @@ public class DepositTest {
                 .body("balance", equalTo(balance + deposit + deposit2));
 
     }
-@Test
-    public void depositCanNotBeNegativeTest(){
-    //        Создать пользователя
-    given()
-            .contentType(ContentType.JSON)
-            .accept(ContentType.JSON)
-            .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-            .body("""
-                        {
-                          "username": "kate2016",
-                          "password": "Kate2000#",
-                          "role": "USER"
-                        }
-                        """)
-            .post("http://localhost:4111/api/v1/admin/users")
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.SC_CREATED);
-    // получаем токен юзера
-    userAuthHeader = given()
-            .contentType(ContentType.JSON)
-            .accept(ContentType.JSON)
-            .body("""
-                        {
-                          "username": "kate2016",
-                          "password": "Kate2000#"
-                        }
-                        """)
-            .post("http://localhost:4111/api/v1/auth/login")
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .extract()
-            .header("Authorization");
-
-    // создаем аккаунт(счет)
-    Response response = given()
-            .header("Authorization", userAuthHeader)
-            .contentType(ContentType.JSON)
-            .accept(ContentType.JSON)
-            .post("http://localhost:4111/api/v1/accounts")
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.SC_CREATED)
-            .extract()
-            .response();
-
-    int id = response.path("id");
-    float balance = response.path("balance");
-
-    System.out.println("ID = " + id);
-    System.out.println("Balance = " + balance);
-
-    // вносим депозит
-    float deposit = -1;
-
-    String body = String.format(Locale.US, """
-        {
-          "id": %d,
-          "balance": %f
-        }
-        """, id, deposit);
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(body)
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.containsString("Deposit amount must be at least 0.01"));
-    }
 
     @Test
-    public void depositCanNotBeMore5000Test(){
+    public void depositCanNotBeNegativeTest() {
         //        Создать пользователя
         given()
                 .contentType(ContentType.JSON)
@@ -278,7 +206,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2018",
+                          "username": "kate2016",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -293,7 +221,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2018",
+                          "username": "kate2016",
                           "password": "Kate2000#"
                         }
                         """)
@@ -323,14 +251,14 @@ public class DepositTest {
         System.out.println("Balance = " + balance);
 
         // вносим депозит
-        float deposit = 50001;
+        float deposit = -1;
 
         String body = String.format(Locale.US, """
-        {
-          "id": %d,
-          "balance": %f
-        }
-        """, id, deposit);
+                {
+                  "id": %d,
+                  "balance": %f
+                }
+                """, id, deposit);
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
@@ -340,11 +268,11 @@ public class DepositTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.containsString("Deposit amount cannot exceed 5000"));
+                .body(Matchers.containsString("Deposit amount must be at least 0.01"));
     }
 
     @Test
-    public void depositCanNotBeOnNonExistAccount(){
+    public void depositCanNotBeMore5000Test() {
         //        Создать пользователя
         given()
                 .contentType(ContentType.JSON)
@@ -352,7 +280,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2020",
+                          "username": "kate2030",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -367,7 +295,81 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2020",
+                          "username": "kate2030",
+                          "password": "Kate2000#"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/auth/login")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .header("Authorization");
+
+        // создаем аккаунт(счет)
+        Response response = given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .post("http://localhost:4111/api/v1/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED)
+                .extract()
+                .response();
+
+        int id = response.path("id");
+        float balance = response.path("balance");
+
+        System.out.println("ID = " + id);
+        System.out.println("Balance = " + balance);
+
+        // вносим депозит
+        float deposit = 5001;
+
+        String body = String.format(Locale.US, """
+                {
+                  "id": %d,
+                  "balance": %f
+                }
+                """, id, deposit);
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(body)
+                .post("http://localhost:4111/api/v1/accounts/deposit")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
+                .body(Matchers.containsString("Deposit amount cannot exceed 5000"));
+    }
+
+    @Test
+    public void depositCanNotBeOnNonExistAccount() {
+        //        Создать пользователя
+        given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
+                .body("""
+                        {
+                          "username": "kate2023",
+                          "password": "Kate2000#",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/admin/users")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED);
+        // получаем токен юзера
+        userAuthHeader = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "username": "kate2023",
                           "password": "Kate2000#"
                         }
                         """)
@@ -394,11 +396,11 @@ public class DepositTest {
         float deposit = 500;
 
         String body = String.format(Locale.US, """
-        {
-          "id": %d,
-          "balance": %f
-        }
-        """, id, deposit);
+                {
+                  "id": %d,
+                  "balance": %f
+                }
+                """, id, deposit);
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
@@ -407,9 +409,117 @@ public class DepositTest {
                 .post("http://localhost:4111/api/v1/accounts/deposit")
                 .then()
                 .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                //TODO: изменить текст ошибки
-                .body(Matchers.containsString("Deposit amount cannot exceed 5000"));
+                .statusCode(HttpStatus.SC_FORBIDDEN)
+                .body(Matchers.containsString("Unauthorized access to account"));
+    }
+
+    @Test
+    public void depositToSomeoneAccountIsNotPossibleTest() {
+
+        //        Создать пользователя
+        given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
+                .body("""
+                        {
+                          "username": "kate2029",
+                          "password": "Kate2000#",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/admin/users")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED);
+        // получаем токен юзера
+        String userAuthHeader1 = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "username": "kate2029",
+                          "password": "Kate2000#"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/auth/login")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .header("Authorization");
+
+        // создаем аккаунт(счет)
+        Response response = given()
+                .header("Authorization", userAuthHeader1)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .post("http://localhost:4111/api/v1/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED)
+                .extract()
+                .response();
+
+        int id = response.path("id");
+        float balance = response.path("balance");
+
+        System.out.println("ID = " + id);
+        System.out.println("Balance = " + balance);
+
+        //        Создать второго пользователя
+        given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
+                .body("""
+                        {
+                          "username": "petr2024",
+                          "password": "Petr2000#",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/admin/users")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED);
+        // получаем токен второго пользователя
+        String userAuthHeader2 = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "username": "petr2024",
+                          "password": "Petr2000#"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/auth/login")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .header("Authorization");
+
+
+        // вносим депозит
+        float deposit = 500;
+
+        String body = String.format(Locale.US, """
+                {
+                  "id": %d,
+                  "balance": %f
+                }
+                """, id, deposit);
+        given()
+                .header("Authorization", userAuthHeader2)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(body)
+                .post("http://localhost:4111/api/v1/accounts/deposit")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_FORBIDDEN)
+                .body(Matchers.containsString("Unauthorized access to account"));
     }
 
 }
