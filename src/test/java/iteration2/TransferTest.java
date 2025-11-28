@@ -25,7 +25,6 @@ public class TransferTest {
     }
 
 
-
     @Test
     public void userCanMakeTransferToYourOwnAccountTest() {
 
@@ -1160,6 +1159,7 @@ public class TransferTest {
 
 
     }
+
     @Test
     public void userCanNotMakeTransferFromOtherOwnAccountTest() {
 
@@ -1301,7 +1301,6 @@ public class TransferTest {
 
 
     }
-
 
 
 }

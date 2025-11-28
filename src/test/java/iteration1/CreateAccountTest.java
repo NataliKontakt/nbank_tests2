@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.hasItem;
 
 public class CreateAccountTest {
     @BeforeAll
@@ -29,7 +30,7 @@ public class CreateAccountTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2000111",
+                          "username": "kate2000114",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -45,7 +46,7 @@ public class CreateAccountTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2000111",
+                          "username": "kate2000114",
                           "password": "Kate2000#"
                         }
                         """)
@@ -57,16 +58,25 @@ public class CreateAccountTest {
                 .header("Authorization");
 
         // создаем аккаунт(счет)
-        given()
+        String account = given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .post("http://localhost:4111/api/v1/accounts")
                 .then()
                 .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+                .statusCode(HttpStatus.SC_CREATED)
+                .extract().response().path("accountNumber");
 
         // запросить все аккаунты пользователя и проверить, что наш аккаунт там
-
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("accountNumber", hasItem(account));
     }
 }
