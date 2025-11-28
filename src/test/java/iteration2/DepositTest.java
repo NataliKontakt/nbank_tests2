@@ -346,7 +346,7 @@ public class DepositTest {
     }
 
     @Test
-    public void depositCanNotBeOnNonExistAccount() {
+    public void depositCanNotBeOnNotExistAccount() {
         //        Создать пользователя
         given()
                 .contentType(ContentType.JSON)
