@@ -34,7 +34,7 @@ public class ChangingNameInProfileTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2057",
+                          "username": "kate2064",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -49,7 +49,7 @@ public class ChangingNameInProfileTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2057",
+                          "username": "kate2064",
                           "password": "Kate2000#"
                         }
                         """)
@@ -79,6 +79,17 @@ public class ChangingNameInProfileTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK)
                 .body("customer.name", Matchers.equalTo(expectedName));
+
+        //Проверяем, что новое имя сохранилось
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.equalTo(expectedName));
 
     }
 

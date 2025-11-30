@@ -35,7 +35,7 @@ public class TransferTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2037",
+                          "username": "kate2074",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -50,7 +50,7 @@ public class TransferTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2037",
+                          "username": "kate2074",
                           "password": "Kate2000#"
                         }
                         """)
@@ -153,7 +153,7 @@ public class TransferTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK);
-
+//проверяем баланс счетов
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
