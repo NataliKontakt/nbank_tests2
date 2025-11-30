@@ -35,7 +35,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2014",
+                          "username": "kate2068",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -50,7 +50,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2014",
+                          "username": "kate2068",
                           "password": "Kate2000#"
                         }
                         """)
@@ -81,6 +81,7 @@ public class DepositTest {
 
         // вносим депозит
         float deposit = 50;
+        float expectedBalance = balance + deposit;
 
         String body = String.format(Locale.US, """
                 {
@@ -97,7 +98,19 @@ public class DepositTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK)
-                .body("balance", equalTo(balance + deposit));
+                .body("balance", equalTo(expectedBalance));
+
+        //проверяем сохранившийся баланс
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + id + " }.balance", equalTo(expectedBalance));
+
     }
 
     //проверяем сложение не нулевого баланса с депозитом и граничное значение 5000
@@ -110,7 +123,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2024",
+                          "username": "kate2070",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -125,7 +138,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2024",
+                          "username": "kate2070",
                           "password": "Kate2000#"
                         }
                         """)
@@ -181,7 +194,7 @@ public class DepositTest {
                   "balance": %f
                 }
                 """, id, deposit2);
-
+        float expectedBalance = balance + deposit + deposit2;
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
@@ -191,7 +204,18 @@ public class DepositTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK)
-                .body("balance", equalTo(balance + deposit + deposit2));
+                .body("balance", equalTo(expectedBalance));
+
+        //проверяем сохранившийся баланс
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + id + " }.balance", equalTo(expectedBalance));
 
     }
 
