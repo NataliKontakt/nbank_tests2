@@ -3,6 +3,9 @@ package specs;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
+
+import java.util.List;
 
 public class ResponseSpec {
     private ResponseSpec(){};
@@ -17,9 +20,17 @@ public class ResponseSpec {
                 .build();
     }
 
-    public static ResponseSpecification requestOk(){
+    public static ResponseSpecification requestReturnsOk(){
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_OK)
                 .build();
+    }
+
+    public static ResponseSpecification requestReturnsBadRequest(String errorKey, List<String> errorValue){
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+                .expectBody(errorKey, Matchers.containsInAnyOrder(errorValue.toArray()))
+                .build();
+
     }
 }

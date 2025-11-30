@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import iteration1.BaseTest;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 
-public class ChangingNameInProfileTest {
+public class ChangingNameInProfileTest extends BaseTest {
     @BeforeAll
     public static void setupRestAssured() {
         RestAssured.filters(

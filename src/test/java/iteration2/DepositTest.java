@@ -5,6 +5,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import iteration1.BaseTest;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,7 +17,7 @@ import java.util.Locale;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-public class DepositTest {
+public class DepositTest extends BaseTest {
     @BeforeAll
     public static void setupRestAssured() {
         RestAssured.filters(
