@@ -4,6 +4,7 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
+import models.CustomerProfileResponse;
 
 public abstract class Request<T extends BaseModel> {
     protected RequestSpecification requestSpecification;
@@ -15,6 +16,10 @@ public abstract class Request<T extends BaseModel> {
     }
 
     public abstract ValidatableResponse post(T model);
+
+    public CustomerProfileResponse get(){
+        return null;
+    };
 
 
 }

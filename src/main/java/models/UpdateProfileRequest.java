@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChangeProfileRequest extends BaseModel{
+public class UpdateProfileRequest extends BaseModel{
     private String name;
 }
 /*

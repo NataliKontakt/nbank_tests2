@@ -12,4 +12,8 @@ public class RandomData {
         return RandomStringUtils.randomAlphabetic(3).toUpperCase()+
                 RandomStringUtils.randomAlphabetic(3).toLowerCase()+
                 RandomStringUtils.randomNumeric(2)+ "#^&";
-    }}
+    }
+    public static String getName(){
+        return RandomStringUtils.randomAlphabetic(10)+" "+RandomStringUtils.randomAlphabetic(10);
+    }
+}
