@@ -1,15 +1,10 @@
 package iteration2;
 
 import generators.RandomData;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import iteration1.BaseTest;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
 import models.DepositRequest;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import requests.AdminCreateUserRequester;
@@ -19,9 +14,6 @@ import requests.UpdateCustomerProfileRequester;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
-import java.util.Locale;
-
-import static io.restassured.RestAssured.given;
 import static models.UserRole.USER;
 
 public class DepositTest extends BaseTest {
@@ -43,7 +35,6 @@ public class DepositTest extends BaseTest {
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
-
         // создаем аккаунт(счет)
         new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
@@ -55,16 +46,12 @@ public class DepositTest extends BaseTest {
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
 
-
-        id = customerProfile.getAccounts().get(0).getId();
-        balance = customerProfile.getAccounts().get(0).getBalance();
+        id = customerProfile.getAccounts().getFirst().getId();
+        balance = customerProfile.getAccounts().getFirst().getBalance();
     }
-
-    String userAuthHeader;
 
     @Test
     public void userCanMakeDepositTest() {
-
 
         // вносим депозит
         float deposit = 50;
@@ -83,7 +70,7 @@ public class DepositTest extends BaseTest {
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
 
-        softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().get(0).getBalance());
+        softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
 
     }
 
@@ -118,7 +105,7 @@ public class DepositTest extends BaseTest {
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
 
-        softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().get(0).getBalance());
+        softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
 
     }
 
@@ -197,7 +184,7 @@ public class DepositTest extends BaseTest {
                 .getAccounts();
 
 
-        long id2 = customerProfile2.getAccounts().get(0).getId();
+        long id2 = customerProfile2.getAccounts().getFirst().getId();
 
         // вносим депозит
         float deposit = 500;
