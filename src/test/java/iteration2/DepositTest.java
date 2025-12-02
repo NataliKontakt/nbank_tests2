@@ -1,116 +1,90 @@
 package iteration2;
 
+import generators.RandomData;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import iteration1.BaseTest;
+import models.CreateUserRequest;
+import models.CustomerAccountsResponse;
+import models.CustomerProfileResponse;
+import models.DepositRequest;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import requests.AdminCreateUserRequester;
+import requests.CreateAccountRequester;
+import requests.DepositRequester;
+import requests.UpdateCustomerProfileRequester;
+import specs.RequestSpec;
+import specs.ResponseSpec;
 
 import java.util.List;
 import java.util.Locale;
 
 import static io.restassured.RestAssured.given;
+import static models.UserRole.USER;
 import static org.hamcrest.Matchers.equalTo;
 
 public class DepositTest extends BaseTest {
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(
-                List.of(new RequestLoggingFilter(),
-                        new ResponseLoggingFilter()));
-    }
+
 
     String userAuthHeader;
 
     @Test
     public void userCanMakeDepositTest() {
-//        Создать пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "kate2068",
-                          "password": "Kate2000#",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
-        // получаем токен юзера
-        userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "kate2068",
-                          "password": "Kate2000#"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+
+        //создание объекта пользователя
+        CreateUserRequest user1 = CreateUserRequest.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getUserPassword())
+                .role(USER.toString())
+                .build();
+        // создание пользователя
+        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+                ResponseSpec.entityWasCreatad())
+                .post(user1);
+
 
         // создаем аккаунт(счет)
-        Response response = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .response();
+        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(),user1.getPassword()),
+                ResponseSpec.entityWasCreatad())
+                .post(null);
 
-        int id = response.path("id");
-        float balance = response.path("balance");
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
 
-        System.out.println("ID = " + id);
-        System.out.println("Balance = " + balance);
+
+        long id = customerProfile.getAccounts().get(0).getId();
+        float balance = customerProfile.getAccounts().get(0).getBalance();
 
         // вносим депозит
         float deposit = 50;
         float expectedBalance = balance + deposit;
+        //Создаем объект депозита
+        DepositRequest accountDeposite = DepositRequest.builder()
+                .id(id)
+                .balance(deposit)
+                .build();
 
-        String body = String.format(Locale.US, """
-                {
-                  "id": %d,
-                  "balance": %f
-                }
-                """, id, deposit);
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(body)
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("balance", equalTo(expectedBalance));
+        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .post(accountDeposite);
 
-        //проверяем сохранившийся баланс
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + id + " }.balance", equalTo(expectedBalance));
+        //через гет получаем новый баланс и сверяем с ожидаемым
+
+        CustomerAccountsResponse customerProfileNew = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().get(0).getBalance());
 
     }
 

@@ -43,7 +43,7 @@ public class ChangingNameInProfileTest extends BaseTest {
         CustomerProfileResponse customerProfile = new UpdateCustomerProfileRequester(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
-                .get();
+                .getProfile();
         softly.assertThat(expectedName).isEqualTo(customerProfile.getName());
     }
 
