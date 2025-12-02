@@ -39,6 +39,12 @@ public class ResponseSpec {
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
                 .expectBody(Matchers.equalTo(errorValue))
                 .build();
+    }
 
+    public static ResponseSpecification requestReturnsForbiddenRequest(){
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .expectBody(Matchers.equalTo("Unauthorized access to account"))
+                .build();
     }
 }
