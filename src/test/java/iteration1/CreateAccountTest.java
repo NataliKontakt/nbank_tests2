@@ -1,6 +1,7 @@
 package iteration1;
 
 import generators.RandomData;
+import io.restassured.response.ValidatableResponse;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
 import org.junit.jupiter.api.Test;
@@ -27,28 +28,20 @@ public class CreateAccountTest extends BaseTest {
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
-
         // создаем аккаунт(счет)
-        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        ValidatableResponse response =  new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-
+        String accountNumber = response.extract().jsonPath().getString("accountNumber");
 
         // запросить все аккаунты пользователя и проверить, что наш аккаунт там
 
-        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfileNew = new UpdateCustomerProfileRequester(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
 
-     /*   given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("accountNumber", hasItem(account));*/
+        softly.assertThat(accountNumber).isEqualTo(customerProfileNew.getAccounts().getFirst().getAccountNumber());
+
     }
 }
