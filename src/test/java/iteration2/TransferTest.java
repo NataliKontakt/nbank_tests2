@@ -153,7 +153,7 @@ public class TransferTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK);
-//проверяем баланс счетов
+        //проверяем баланс счетов
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
@@ -172,7 +172,7 @@ public class TransferTest {
     @Test
     public void userCanMakeTransferToOtherOwnAccountTest() {
 
-//        Создать пользователя1
+        //        Создать пользователя1
         given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
@@ -239,7 +239,7 @@ public class TransferTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK);
 
-//        Создать пользователя2
+        //        Создать пользователя2
         given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
@@ -288,7 +288,7 @@ public class TransferTest {
 
 
         System.out.println("ID = " + id2);
-//переводим деньги
+        //переводим деньги
         float transfer = 250;
         String bodyTransfer = String.format(Locale.US, """
                 {
@@ -306,7 +306,7 @@ public class TransferTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK);
-// проверяем счет 1
+        // проверяем счет 1
         given()
                 .header("Authorization", userAuthHeader)
                 .contentType(ContentType.JSON)
@@ -336,7 +336,7 @@ public class TransferTest {
     @Test
     public void userCanMakeTransferToSameAccountTest() {
 
-//        Создать пользователя
+        //        Создать пользователя
         given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
@@ -567,7 +567,19 @@ public class TransferTest {
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.containsString("Invalid transfer: insufficient funds or invalid accounts"));
 
-
+        //проверяем баланс счетов
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id1),
+                        equalTo((deposit1)))
+                .body("find { it.id == %s }.balance".formatted(id2),
+                        equalTo((deposit2)));
     }
 
     @Test
@@ -640,7 +652,7 @@ public class TransferTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK);
 
-//        Создать пользователя2
+        //        Создать пользователя2
         given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
@@ -686,10 +698,11 @@ public class TransferTest {
                 .response();
 
         int id2 = response2.path("id");
+        float balance2 = response2.path("balance");
 
 
         System.out.println("ID = " + id2);
-//переводим деньги
+        //переводим деньги
         float transfer = 550;
         String bodyTransfer = String.format(Locale.US, """
                 {
@@ -709,6 +722,29 @@ public class TransferTest {
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.containsString("Invalid transfer: insufficient funds or invalid accounts"));
 
+        // проверяем счет 1
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id1),
+                        equalTo((deposit1)));
+
+        // проверяем счет2
+        given()
+                .header("Authorization", userAuthHeader2)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id2),
+                        equalTo((balance2)));
     }
 
     @Test
@@ -841,6 +877,19 @@ public class TransferTest {
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.containsString("Transfer amount must be at least 0.01"));
 
+        //проверяем баланс счетов
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id1),
+                        equalTo((deposit1)))
+                .body("find { it.id == %s }.balance".formatted(id2),
+                        equalTo((deposit2)));
 
     }
 
@@ -960,6 +1009,7 @@ public class TransferTest {
                 .response();
 
         int id2 = response2.path("id");
+        float balance2 = response2.path("balance");
 
 
         System.out.println("ID = " + id2);
@@ -982,6 +1032,30 @@ public class TransferTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.containsString("Transfer amount must be at least 0.01"));
+
+        // проверяем счет 1
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id1),
+                        equalTo((deposit1)));
+
+        // проверяем счет2
+        given()
+                .header("Authorization", userAuthHeader2)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id2),
+                        equalTo((balance2)));
 
     }
 
@@ -1080,7 +1154,17 @@ public class TransferTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.containsString("Invalid transfer: insufficient funds or invalid accounts"));
-
+        // проверяем счет 1
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id1),
+                        equalTo((deposit1)));
 
     }
 
@@ -1133,6 +1217,7 @@ public class TransferTest {
                 .response();
 
         int id1 = response.path("id");
+        float balance1 = response.path("balance");
 
 
         //несуществующий аккаунт
@@ -1157,7 +1242,17 @@ public class TransferTest {
                 .statusCode(HttpStatus.SC_FORBIDDEN)
                 .body(Matchers.containsString("Unauthorized access to account"));
 
-
+        // проверяем счет 1
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id1),
+                        equalTo((balance1)));
     }
 
     @Test
@@ -1276,6 +1371,7 @@ public class TransferTest {
                 .response();
 
         int id2 = response2.path("id");
+        float balance2 = response2.path("balance");
 
 
         System.out.println("ID = " + id2);
@@ -1299,7 +1395,29 @@ public class TransferTest {
                 .statusCode(HttpStatus.SC_FORBIDDEN)
                 .body(Matchers.containsString("Unauthorized access to account"));
 
+// проверяем счет 1
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id1),
+                        equalTo((deposit1)));
 
+        // проверяем счет2
+        given()
+                .header("Authorization", userAuthHeader2)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == %s }.balance".formatted(id2),
+                        equalTo((balance2)));
     }
 
 

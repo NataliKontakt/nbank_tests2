@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.nullValue;
 
 public class ChangingNameInProfileTest {
     @BeforeAll
@@ -117,7 +118,7 @@ public class ChangingNameInProfileTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kate2063",
+                          "username": "kate2065",
                           "password": "Kate2000#",
                           "role": "USER"
                         }
@@ -133,7 +134,7 @@ public class ChangingNameInProfileTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kate2063",
+                          "username": "kate2065",
                           "password": "Kate2000#"
                         }
                         """)
@@ -161,6 +162,17 @@ public class ChangingNameInProfileTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.containsString("Name must contain two words with letters only"));
+
+        //Проверяем, что имя осталось null
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", nullValue());
     }
 
 
