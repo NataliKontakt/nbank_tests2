@@ -5,8 +5,7 @@ import iteration1.BaseTest;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
 import models.DepositRequest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import requests.AdminCreateUserRequester;
 import requests.CreateAccountRequester;
 import requests.DepositRequester;
@@ -19,8 +18,10 @@ import static models.UserRole.USER;
 public class DepositTest extends BaseTest {
     CreateUserRequest user1;
     CustomerAccountsResponse customerProfile;
+    CustomerAccountsResponse customerProfileNew;
     long id;
     float balance;
+    float expectedBalance;
 
     @BeforeEach
     public void prepareData() {
@@ -49,13 +50,30 @@ public class DepositTest extends BaseTest {
         id = customerProfile.getAccounts().getFirst().getId();
         balance = customerProfile.getAccounts().getFirst().getBalance();
     }
+    @AfterEach
+    public void assertTest(TestInfo testInfo){
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        customerProfileNew = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
 
+        if (testInfo.getTags().contains("Positive")) {
+            System.out.println("Позитивная проверка");
+            softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
+        } else if (testInfo.getTags().contains("Negative")) {
+            System.out.println("Негативная проверка");
+            softly.assertThat(balance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
+        }
+
+    }
+    @Tag("Positive")
     @Test
     public void userCanMakeDepositTest() {
 
         // вносим депозит
         float deposit = 50;
-        float expectedBalance = balance + deposit;
+        expectedBalance = balance + deposit;
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -63,18 +81,10 @@ public class DepositTest extends BaseTest {
                         .id(id)
                         .balance(deposit)
                         .build());
-
-        //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse customerProfileNew = new UpdateCustomerProfileRequester(
-                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                ResponseSpec.requestReturnsOk())
-                .getAccounts();
-
-        softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
-
     }
 
     //проверяем сложение не нулевого баланса с депозитом и граничное значение 5000
+    @Tag("Positive")
     @Test
     public void userCanMakeDepositNotZeroBalanceTest() {
 
@@ -90,7 +100,7 @@ public class DepositTest extends BaseTest {
 
         // вносим депозит еще
         float deposit2 = 5000;
-        float expectedBalance = balance + deposit + deposit2;
+        expectedBalance = balance + deposit + deposit2;
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -99,16 +109,9 @@ public class DepositTest extends BaseTest {
                         .balance(deposit2)
                         .build());
 
-        //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse customerProfileNew = new UpdateCustomerProfileRequester(
-                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                ResponseSpec.requestReturnsOk())
-                .getAccounts();
-
-        softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
-
     }
 
+    @Tag("Negative")
     @Test
     public void depositCanNotBeNegativeTest() {
 
@@ -125,6 +128,7 @@ public class DepositTest extends BaseTest {
 
     }
 
+    @Tag("Negative")
     @Test
     public void depositCanNotBeMore5000Test() {
 
@@ -139,8 +143,10 @@ public class DepositTest extends BaseTest {
                         .id(id)
                         .balance(deposit)
                         .build());
+
     }
 
+    @Tag("Negative")
     @Test
     public void depositCanNotBeOnNotExistAccount() {
 
@@ -157,6 +163,7 @@ public class DepositTest extends BaseTest {
                         .build());
     }
 
+    @Tag("Negative")
     @Test
     public void depositToSomeoneAccountIsNotPossibleTest() {
 
@@ -170,7 +177,6 @@ public class DepositTest extends BaseTest {
         new AdminCreateUserRequester(RequestSpec.adminSpec(),
                 ResponseSpec.entityWasCreatad())
                 .post(user2);
-
 
         // создаем аккаунт(счет) 2 пользователя
         new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),

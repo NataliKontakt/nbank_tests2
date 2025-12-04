@@ -81,5 +81,13 @@ public class ChangingNameInProfileTest extends BaseTest {
                 ResponseSpec.requestReturnsBadRequest(errorValue))
                 .put(UpdateProfileRequest.builder().name(name).build());
 
+        //Проверяем, что новое имя сохранилось
+        CustomerProfileResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getProfile();
+
+        softly.assertThat(customerProfile.getName()).isNull();
+
     }
 }

@@ -108,7 +108,6 @@ public class TransferTest extends BaseTest {
         float expectedBalance1 = deposit1 - transfer;
         float expectedBalance2 = deposit2 + transfer;
 
-
         softly.assertThat(expectedBalance1).isEqualTo(customerProfileNew1.getAccounts().get(0).getBalance());
         softly.assertThat(expectedBalance2).isEqualTo(customerProfileNew1.getAccounts().get(1).getBalance());
 
@@ -176,7 +175,9 @@ public class TransferTest extends BaseTest {
 
 
         float expectedBalance1 = deposit1 - transfer;
+        System.out.println("expectedBalance1 " + expectedBalance1 );
         float expectedBalance2 = deposit2 + transfer;
+        System.out.println("expectedBalance2 " + expectedBalance2 );
 
 
         softly.assertThat(expectedBalance1).isEqualTo(customerProfileNew1.getAccounts().getFirst().getBalance());
@@ -247,7 +248,14 @@ public class TransferTest extends BaseTest {
                 ResponseSpec.requestReturnsBadRequest(errorValue))
                 .post(transferRequest);
 
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
 
+        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().get(0).getBalance());
+        softly.assertThat(deposit2).isEqualTo(customerProfileNew1.getAccounts().get(1).getBalance());
     }
 
     @Test
@@ -298,6 +306,21 @@ public class TransferTest extends BaseTest {
         new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsBadRequest(errorValue))
                 .post(transferRequest);
+
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        CustomerAccountsResponse customerProfileNew2 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().getFirst().getBalance());
+        softly.assertThat(deposit2).isEqualTo(customerProfileNew2.getAccounts().getFirst().getBalance());
+
     }
 
     @Test
@@ -339,6 +362,14 @@ public class TransferTest extends BaseTest {
                 ResponseSpec.requestReturnsBadRequest(errorValue))
                 .post(transferRequest);
 
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().get(0).getBalance());
+        softly.assertThat(deposit2).isEqualTo(customerProfileNew1.getAccounts().get(1).getBalance());
     }
 
     @Test
@@ -391,6 +422,19 @@ public class TransferTest extends BaseTest {
                 ResponseSpec.requestReturnsBadRequest(errorValue))
                 .post(transferRequest);
 
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        CustomerAccountsResponse customerProfileNew2 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().getFirst().getBalance());
+        softly.assertThat(deposit2).isEqualTo(customerProfileNew2.getAccounts().getFirst().getBalance());
     }
 
     @Test
@@ -409,6 +453,14 @@ public class TransferTest extends BaseTest {
                 ResponseSpec.requestReturnsBadRequest(errorValue))
                 .post(transferRequest);
 
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().getFirst().getBalance());
+
     }
 
     @Test
@@ -425,6 +477,14 @@ public class TransferTest extends BaseTest {
         new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(transferRequest);
+
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().getFirst().getBalance());
     }
 
     @Test
@@ -474,6 +534,14 @@ public class TransferTest extends BaseTest {
         new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(transferRequest);
+
+        //через гет получаем новый баланс и сверяем с ожидаемым
+        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().getFirst().getBalance());
 
     }
 
