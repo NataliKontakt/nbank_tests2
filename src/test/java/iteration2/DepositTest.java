@@ -127,7 +127,6 @@ public class DepositTest extends BaseTest {
                         .id(id)
                         .balance(deposit)
                         .build());
-
     }
 
     @Tag("Negative")
@@ -145,7 +144,6 @@ public class DepositTest extends BaseTest {
                         .id(id)
                         .balance(deposit)
                         .build());
-
     }
 
     @Tag("Negative")
@@ -153,7 +151,7 @@ public class DepositTest extends BaseTest {
     public void depositCanNotBeOnNotExistAccount() {
 
         // несуществующий id
-        int id = 100500;
+        int idNotExist = 100500;
         // вносим депозит
         float deposit = RandomData.getDeposit();
 
@@ -191,10 +189,10 @@ public class DepositTest extends BaseTest {
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
 
-
         long id2 = customerProfile2.getAccounts().getFirst().getId();
 
         // вносим депозит
+
         float deposit = RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),

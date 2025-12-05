@@ -57,6 +57,7 @@ public class TransferTest extends BaseTest {
 
     @Test
     public void userCanMakeTransferToYourOwnAccountTest() {
+      
         // создаем второй аккаунт(счет) того же пользователя
         ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
@@ -106,6 +107,7 @@ public class TransferTest extends BaseTest {
 
     @Test
     public void userCanMakeTransferToOtherOwnAccountTest() {
+
 
         //создание объекта 2 пользователя
         user2 = CreateUserRequest.builder()
@@ -165,12 +167,15 @@ public class TransferTest extends BaseTest {
                 .filteredOn(account -> account.getId() == id2)
                 .extracting(Account::getBalance)
                 .containsExactly(expectedBalance2);
+
     }
 
     @Test
     public void userCanMakeTransferToSameAccountTest() {
 
+
         float transfer = deposit1 - 1;
+
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -187,6 +192,7 @@ public class TransferTest extends BaseTest {
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
+
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -292,10 +298,12 @@ public class TransferTest extends BaseTest {
                 .filteredOn(account -> account.getId() == id2)
                 .extracting(Account::getBalance)
                 .containsExactly(deposit2);
+
     }
 
     @Test
     public void userCanNotMakeTransferToYourOwnAccountNegativeSumTest() {
+
         // создаем второй аккаунт(счет) того же пользователя
         ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
@@ -331,10 +339,12 @@ public class TransferTest extends BaseTest {
                 .filteredOn(account -> account.getId() == id2)
                 .extracting(Account::getBalance)
                 .containsExactly(balance2);
+
     }
 
     @Test
     public void userCanNotMakeTransferToOtherOwnAccountNegativeSumTest() {
+
         //создание объекта 2 пользователя
         user2 = CreateUserRequest.builder()
                 .username(RandomData.getUserName())
@@ -392,10 +402,12 @@ public class TransferTest extends BaseTest {
                 .filteredOn(account -> account.getId() == id2)
                 .extracting(Account::getBalance)
                 .containsExactly(deposit2);
+
     }
 
     @Test
     public void userCanNotMakeTransferToOnNotExistAccountTest() {
+
         long id2 = 100500;
         float transfer = RandomData.getDeposit();
 
@@ -419,10 +431,12 @@ public class TransferTest extends BaseTest {
                 .filteredOn(account -> account.getId() == id1)
                 .extracting(Account::getBalance)
                 .containsExactly(deposit1);
+
     }
 
     @Test
     public void userCanNotMakeTransferFromOnNotExistAccountTest() {
+
         long id2 = 100500;
         float transfer = RandomData.getDeposit();
 
@@ -446,6 +460,7 @@ public class TransferTest extends BaseTest {
                 .filteredOn(account -> account.getId() == id1)
                 .extracting(Account::getBalance)
                 .containsExactly(deposit1);
+
     }
 
     @Test

@@ -15,8 +15,8 @@ import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import java.util.stream.Stream;
-
 import static models.UserRole.USER;
+
 
 public class ChangingNameInProfileTest extends BaseTest {
 
