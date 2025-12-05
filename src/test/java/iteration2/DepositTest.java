@@ -50,6 +50,7 @@ public class DepositTest extends BaseTest {
         id = customerProfile.getAccounts().getFirst().getId();
         balance = customerProfile.getAccounts().getFirst().getBalance();
     }
+
     @AfterEach
     public void assertTest(TestInfo testInfo){
         //через гет получаем новый баланс и сверяем с ожидаемым
@@ -67,12 +68,13 @@ public class DepositTest extends BaseTest {
         }
 
     }
+
     @Tag("Positive")
     @Test
     public void userCanMakeDepositTest() {
 
         // вносим депозит
-        float deposit = 50;
+        float deposit = RandomData.getDeposit();
         expectedBalance = balance + deposit;
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
@@ -89,7 +91,7 @@ public class DepositTest extends BaseTest {
     public void userCanMakeDepositNotZeroBalanceTest() {
 
         // вносим депозит
-        float deposit = 50;
+        float deposit = RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -153,7 +155,7 @@ public class DepositTest extends BaseTest {
         // несуществующий id
         int id = 100500;
         // вносим депозит
-        float deposit = 500;
+        float deposit = RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsForbiddenRequest())
@@ -193,7 +195,7 @@ public class DepositTest extends BaseTest {
         long id2 = customerProfile2.getAccounts().getFirst().getId();
 
         // вносим депозит
-        float deposit = 500;
+        float deposit = RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsForbiddenRequest())

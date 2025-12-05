@@ -2,15 +2,14 @@ package iteration2;
 
 import generators.RandomData;
 import iteration1.BaseTest;
-import models.CreateUserRequest;
-import models.CustomerAccountsResponse;
-import models.DepositRequest;
-import models.TransferRequest;
+import models.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import requests.*;
 import specs.RequestSpec;
 import specs.ResponseSpec;
+
+import java.util.List;
 
 import static models.UserRole.USER;
 
@@ -52,7 +51,7 @@ public class TransferTest extends BaseTest {
         id1 = customerProfile.getAccounts().getFirst().getId();
 
         // вносим депозит на аккаунт 1 пользователя
-        deposit1 = 500;
+        deposit1 = RandomData.getDeposit();
         balance1 = customerProfile.getAccounts().getFirst().getBalance();
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -76,9 +75,9 @@ public class TransferTest extends BaseTest {
                 .getAccounts();
 
 
-        long id2 = customerProfile2.getAccounts().get(1).getId();
+        long id2 = customerProfile2.getAccounts().getFirst().getId();
         // вносим депозит на 2 счет того же пользователя
-        float deposit2 = 300;
+        float deposit2 = RandomData.getDeposit();
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
@@ -86,7 +85,7 @@ public class TransferTest extends BaseTest {
                         .balance(deposit2)
                         .build());
 
-        float transfer = 250.75f;
+        float transfer = deposit1 - 1;
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -99,17 +98,23 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response = new UpdateCustomerProfileRequester(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
-
-
         float expectedBalance1 = deposit1 - transfer;
         float expectedBalance2 = deposit2 + transfer;
 
-        softly.assertThat(expectedBalance1).isEqualTo(customerProfileNew1.getAccounts().get(0).getBalance());
-        softly.assertThat(expectedBalance2).isEqualTo(customerProfileNew1.getAccounts().get(1).getBalance());
+        // Проверяем напрямую из response
+        softly.assertThat(response.getAccounts())
+                .filteredOn(account -> account.getId() == id1)
+                .extracting(Account::getBalance)
+                .containsExactly(expectedBalance1);
+
+        softly.assertThat(response.getAccounts())
+                .filteredOn(account -> account.getId() == id2)
+                .extracting(Account::getBalance)
+                .containsExactly(expectedBalance2);
 
     }
 
@@ -227,16 +232,17 @@ public class TransferTest extends BaseTest {
 
 
         long id2 = customerProfile2.getAccounts().get(1).getId();
-        // вносим депозит на 2 счет того же пользователя
-        float deposit2 = 300;
+        float balance = customerProfile2.getAccounts().get(1).getBalance();
+        /*// вносим депозит на 2 счет того же пользователя
+        float deposit2 = RandomData.getDeposit();
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id2)
                         .balance(deposit2)
-                        .build());
+                        .build());*/
 
-        float transfer = 550.75f;
+        float transfer = balance1 + RandomData.getDeposit();
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -255,7 +261,7 @@ public class TransferTest extends BaseTest {
                 .getAccounts();
 
         softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().get(0).getBalance());
-        softly.assertThat(deposit2).isEqualTo(customerProfileNew1.getAccounts().get(1).getBalance());
+        softly.assertThat(balance).isEqualTo(customerProfileNew1.getAccounts().get(1).getBalance());
     }
 
     @Test
@@ -287,8 +293,8 @@ public class TransferTest extends BaseTest {
 
         long id2 = customerProfile2.getAccounts().getFirst().getId();
 
-        float deposit2 = 300.75f;
-        float transfer = 750;
+        float deposit2 = RandomData.getDeposit();
+        float transfer = deposit1 + RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -341,16 +347,10 @@ public class TransferTest extends BaseTest {
 
 
         long id2 = customerProfile2.getAccounts().get(1).getId();
-        // вносим депозит на 2 счет того же пользователя
-        float deposit2 = 300;
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                ResponseSpec.requestReturnsOk())
-                .post(DepositRequest.builder()
-                        .id(id2)
-                        .balance(deposit2)
-                        .build());
+        float balance = customerProfile2.getAccounts().get(1).getBalance();
 
-        float transfer = -50.75f;
+        float transfer = -RandomData.getDeposit();
+        System.out.println("transfer " + transfer);
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -363,13 +363,21 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse customerProfileNew1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response = new UpdateCustomerProfileRequester(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
 
-        softly.assertThat(deposit1).isEqualTo(customerProfileNew1.getAccounts().get(0).getBalance());
-        softly.assertThat(deposit2).isEqualTo(customerProfileNew1.getAccounts().get(1).getBalance());
+// Проверяем напрямую из response
+        softly.assertThat(response.getAccounts())
+                .filteredOn(account -> account.getId() == id1)
+                .extracting(Account::getBalance)
+                .containsExactly(deposit1);
+
+        softly.assertThat(response.getAccounts())
+                .filteredOn(account -> account.getId() == id2)
+                .extracting(Account::getBalance)
+                .containsExactly(balance);
     }
 
     @Test
@@ -402,8 +410,8 @@ public class TransferTest extends BaseTest {
 
         long id2 = customerProfile2.getAccounts().getFirst().getId();
 
-        float deposit2 = 300.75f;
-        float transfer = -50.75f;
+        float deposit2 = RandomData.getDeposit();
+        float transfer = -RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -441,7 +449,7 @@ public class TransferTest extends BaseTest {
     public void userCanNotMakeTransferToOnNotExistAccountTest() {
         String errorValue = "Invalid transfer: insufficient funds or invalid accounts";
         long id2 = 100500;
-        float transfer = 50.75f;
+        float transfer = RandomData.getDeposit();
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -466,7 +474,7 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferFromOnNotExistAccountTest() {
         long id2 = 100500;
-        float transfer = 50.75f;
+        float transfer = RandomData.getDeposit();
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id2)
@@ -515,8 +523,8 @@ public class TransferTest extends BaseTest {
 
         long id2 = customerProfile2.getAccounts().getFirst().getId();
 
-        float deposit2 = 380.75f;
-        float transfer = 750;
+        float deposit2 = RandomData.getDeposit();
+        float transfer = RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.requestReturnsOk())
