@@ -17,6 +17,7 @@ import specs.ResponseSpec;
 import java.util.stream.Stream;
 
 import static models.UserRole.USER;
+import static specs.ResponseSpec.errorNameMustContainTwoWords;
 
 public class ChangingNameInProfileTest extends BaseTest {
 
@@ -76,9 +77,8 @@ public class ChangingNameInProfileTest extends BaseTest {
                 .post(user1);
 
         //Изменяем имя
-        String errorValue = "Name must contain two words with letters only";
         new UpdateCustomerProfileRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                ResponseSpec.requestReturnsBadRequest(errorValue))
+                ResponseSpec.requestReturnsBadRequest(errorNameMustContainTwoWords))
                 .put(UpdateProfileRequest.builder().name(name).build());
 
         //Проверяем, что новое имя сохранилось

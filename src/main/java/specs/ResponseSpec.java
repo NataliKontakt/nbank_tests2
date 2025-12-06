@@ -8,7 +8,16 @@ import org.hamcrest.Matchers;
 import java.util.List;
 
 public class ResponseSpec {
-    private ResponseSpec(){};
+    public static String errorInvalidTransfer = "Invalid transfer: insufficient funds or invalid accounts";
+    public static String errorTranslationLessZero = "Transfer amount must be at least 0.01";
+    public static String errorDepositLessZero = "Deposit amount must be at least 0.01";
+    public static String errorDepositCannotExceed_5000 = "Deposit amount cannot exceed 5000";
+    public static String errorNameMustContainTwoWords = "Name must contain two words with letters only";
+    public static String errorUsernameMustContain = "Username must contain only letters, digits, dashes, underscores, and dots";
+    public static String errorUsernameMustBeLength = "Username must be between 3 and 15 characters";
+    public static String errorUsernameCanNotBeBlank = "Username cannot be blank";
+
+    private ResponseSpec(){}
 
     private static ResponseSpecBuilder defaultResponseBuilder(){
         return new ResponseSpecBuilder();

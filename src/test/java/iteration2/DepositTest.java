@@ -1,5 +1,6 @@
 package iteration2;
 
+import generators.MoneyMath;
 import generators.RandomData;
 import iteration1.BaseTest;
 import models.CreateUserRequest;
@@ -14,6 +15,8 @@ import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import static models.UserRole.USER;
+import static specs.ResponseSpec.errorDepositCannotExceed_5000;
+import static specs.ResponseSpec.errorDepositLessZero;
 
 public class DepositTest extends BaseTest {
     CreateUserRequest user1;
@@ -60,10 +63,8 @@ public class DepositTest extends BaseTest {
                 .getAccounts();
 
         if (testInfo.getTags().contains("Positive")) {
-            System.out.println("Позитивная проверка");
             softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
         } else if (testInfo.getTags().contains("Negative")) {
-            System.out.println("Негативная проверка");
             softly.assertThat(balance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
         }
 
@@ -75,7 +76,7 @@ public class DepositTest extends BaseTest {
 
         // вносим депозит
         float deposit = RandomData.getDeposit();
-        expectedBalance = balance + deposit;
+        expectedBalance = MoneyMath.add(balance, deposit);
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -116,13 +117,11 @@ public class DepositTest extends BaseTest {
     @Tag("Negative")
     @Test
     public void depositCanNotBeNegativeTest() {
-
         // вносим депозит
         float deposit = -1;
-        String errorValue = "Deposit amount must be at least 0.01";
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                ResponseSpec.requestReturnsBadRequest(errorValue))
+                ResponseSpec.requestReturnsBadRequest(errorDepositLessZero))
                 .post(DepositRequest.builder()
                         .id(id)
                         .balance(deposit)
@@ -133,14 +132,11 @@ public class DepositTest extends BaseTest {
     @Tag("Negative")
     @Test
     public void depositCanNotBeMore5000Test() {
-
         // вносим депозит
         float deposit = 5001;
 
-        String errorValue = "Deposit amount cannot exceed 5000";
-
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                ResponseSpec.requestReturnsBadRequest(errorValue))
+                ResponseSpec.requestReturnsBadRequest(errorDepositCannotExceed_5000))
                 .post(DepositRequest.builder()
                         .id(id)
                         .balance(deposit)
@@ -153,14 +149,14 @@ public class DepositTest extends BaseTest {
     public void depositCanNotBeOnNotExistAccount() {
 
         // несуществующий id
-        int id = 100500;
+        int nonExistingId = 100500;
         // вносим депозит
         float deposit = RandomData.getDeposit();
 
         new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(DepositRequest.builder()
-                        .id(id)
+                        .id(nonExistingId)
                         .balance(deposit)
                         .build());
     }

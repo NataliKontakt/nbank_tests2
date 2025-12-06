@@ -1,5 +1,6 @@
 package iteration2;
 
+import generators.MoneyMath;
 import generators.RandomData;
 import io.restassured.response.ValidatableResponse;
 import iteration1.BaseTest;
@@ -11,6 +12,8 @@ import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import static models.UserRole.USER;
+import static specs.ResponseSpec.errorInvalidTransfer;
+import static specs.ResponseSpec.errorTranslationLessZero;
 
 public class TransferTest extends BaseTest {
     CreateUserRequest user1;
@@ -18,10 +21,7 @@ public class TransferTest extends BaseTest {
     int id1;
     float balance1;
     float deposit1;
-
-    String errorInvalidTransfer = "Invalid transfer: insufficient funds or invalid accounts";
-    String errorTranslationLessZero = "Transfer amount must be at least 0.01";
-
+    int nonExistingId = 100500;
 
     @BeforeEach
     public void prepareData() {
@@ -72,7 +72,7 @@ public class TransferTest extends BaseTest {
                         .balance(deposit2)
                         .build());
 
-        float transfer = deposit1 - 1;
+        float transfer = MoneyMath.subtract(deposit1, 1);
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -89,8 +89,8 @@ public class TransferTest extends BaseTest {
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
-        float expectedBalance1 = deposit1 - transfer;
-        float expectedBalance2 = deposit2 + transfer;
+        float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
+        float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
         softly.assertThat(response.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -125,7 +125,7 @@ public class TransferTest extends BaseTest {
         int id2 = validatableResponse.extract().path("id");
 
         float deposit2 = RandomData.getDeposit();
-        float transfer = deposit1 - 1;
+        float transfer = MoneyMath.subtract(deposit1, 1);
 
         new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -153,8 +153,8 @@ public class TransferTest extends BaseTest {
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.requestReturnsOk())
                 .getAccounts();
-        float expectedBalance1 = deposit1 - transfer;
-        float expectedBalance2 = deposit2 + transfer;
+        float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
+        float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -170,7 +170,7 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanMakeTransferToSameAccountTest() {
 
-        float transfer = deposit1 - 1;
+        float transfer = MoneyMath.subtract(deposit1, 1);
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -204,7 +204,7 @@ public class TransferTest extends BaseTest {
         int id2 = validatableResponse.extract().path("id");
         float balance2 = validatableResponse.extract().path("balance");
 
-        float transfer = deposit1 + RandomData.getDeposit();
+        float transfer = MoneyMath.add(deposit1, RandomData.getDeposit());
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -253,7 +253,7 @@ public class TransferTest extends BaseTest {
         int id2 = validatableResponse.extract().path("id");
 
         float deposit2 = RandomData.getDeposit();
-        float transfer = deposit1 + RandomData.getDeposit();
+        float transfer = MoneyMath.add(deposit1, RandomData.getDeposit());
 
         new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.requestReturnsOk())
@@ -304,7 +304,6 @@ public class TransferTest extends BaseTest {
         float balance2 = validatableResponse.extract().path("balance");
 
         float transfer = -RandomData.getDeposit();
-        System.out.println("transfer " + transfer);
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
@@ -396,12 +395,11 @@ public class TransferTest extends BaseTest {
 
     @Test
     public void userCanNotMakeTransferToOnNotExistAccountTest() {
-        long id2 = 100500;
         float transfer = RandomData.getDeposit();
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(id1)
-                .receiverAccountId(id2)
+                .receiverAccountId(nonExistingId)
                 .amount(transfer)
                 .build();
 
@@ -423,11 +421,10 @@ public class TransferTest extends BaseTest {
 
     @Test
     public void userCanNotMakeTransferFromOnNotExistAccountTest() {
-        long id2 = 100500;
         float transfer = RandomData.getDeposit();
 
         TransferRequest transferRequest = TransferRequest.builder()
-                .senderAccountId(id2)
+                .senderAccountId(nonExistingId)
                 .receiverAccountId(id1)
                 .amount(transfer)
                 .build();

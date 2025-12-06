@@ -1,15 +1,8 @@
 package iteration1;
 
 import generators.RandomData;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -21,8 +14,8 @@ import specs.ResponseSpec;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
 import static models.UserRole.USER;
+import static specs.ResponseSpec.*;
 
 public class CreateUserTest extends BaseTest {
 
@@ -51,45 +44,45 @@ public class CreateUserTest extends BaseTest {
         return Stream.of(
                 Arguments.of(" ", "Password23#", "USER", "username",
                         List.of(
-                                "Username must contain only letters, digits, dashes, underscores, and dots",
-                                "Username must be between 3 and 15 characters",
-                                "Username cannot be blank"
+                                errorUsernameMustContain,
+                                errorUsernameMustBeLength,
+                                errorUsernameCanNotBeBlank
                         )),
                 Arguments.of("ad", "Password23#", "USER", "username", List.of(
-                        "Username must be between 3 and 15 characters"
+                        errorUsernameMustBeLength
                 )),
                 Arguments.of("ad1!", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1@", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1$", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1%", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1^", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1&", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1*", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1(", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1)", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1=", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 )),
                 Arguments.of("ad1+", "Password23#", "USER", "username", List.of(
-                        "Username must contain only letters, digits, dashes, underscores, and dots"
+                        errorUsernameMustContain
                 ))
 
         );
