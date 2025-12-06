@@ -15,9 +15,9 @@ import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import java.util.stream.Stream;
-
 import static models.UserRole.USER;
 import static specs.ResponseSpec.errorNameMustContainTwoWords;
+
 
 public class ChangingNameInProfileTest extends BaseTest {
 
