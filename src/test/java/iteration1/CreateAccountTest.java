@@ -15,13 +15,6 @@ import static models.UserRole.USER;
 
 public class CreateAccountTest extends BaseTest {
 
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(
-                List.of(new RequestLoggingFilter(),
-                        new ResponseLoggingFilter()));
-    }
-
     @Test
     public void userCanCreateAccountTest() {
 

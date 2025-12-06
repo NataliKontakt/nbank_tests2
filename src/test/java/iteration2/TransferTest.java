@@ -2,7 +2,6 @@ package iteration2;
 
 import generators.MoneyMath;
 import generators.RandomData;
-import io.restassured.response.ValidatableResponse;
 import iteration1.BaseTest;
 import models.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +10,8 @@ import requests.*;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
+import java.util.List;
+
 import static models.UserRole.USER;
 import static specs.ResponseSpec.errorInvalidTransfer;
 import static specs.ResponseSpec.errorTranslationLessZero;
@@ -18,11 +19,11 @@ import static specs.ResponseSpec.errorTranslationLessZero;
 public class TransferTest extends BaseTest {
     CreateUserRequest user1;
     CreateUserRequest user2;
-    int id1;
+    long id1;
     float balance1;
     float deposit1;
     int nonExistingId = 100500;
-
+    CustomerAccountsResponse customerProfile1;
     @BeforeEach
     public void prepareData() {
         //создание объекта пользователя
@@ -37,12 +38,18 @@ public class TransferTest extends BaseTest {
                 .post(user1);
 
         // создаем аккаунт(счет)
-        ValidatableResponse createAcc1 = new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
 
-        id1 = createAcc1.extract().path("id");
-        balance1 = createAcc1.extract().path("balance");
+        //через гет получаем номер аккаунта
+        customerProfile1 = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        id1 = customerProfile1.getAccounts().getFirst().getId();
+        balance1 = customerProfile1.getAccounts().getFirst().getBalance();
 
         // вносим депозит на аккаунт 1 пользователя
         deposit1 = RandomData.getDeposit();
@@ -58,10 +65,21 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanMakeTransferToYourOwnAccountTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        int id2 = validatableResponse.extract().path("id");
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        List<Account> accounts = customerProfile.getAccounts();
+        // Находим индекс известного аккаунта
+        int indexId1 = accounts.getFirst().getId() == id1 ? 0 : 1;
+        int indexId2 = 1 - indexId1; // если 0 то 1, если 1 то 0
+
+        long id2 = customerProfile.getAccounts().get(indexId2).getId();
 
         // вносим депозит на 2 счет того же пользователя
         float deposit2 = RandomData.getDeposit();
@@ -119,10 +137,16 @@ public class TransferTest extends BaseTest {
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        int id2 = validatableResponse.extract().path("id");
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = MoneyMath.subtract(deposit1, 1);
@@ -198,11 +222,22 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToYourOwnAccountMoreThenBalanseTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        int id2 = validatableResponse.extract().path("id");
-        float balance2 = validatableResponse.extract().path("balance");
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        List<Account> accounts = customerProfile.getAccounts();
+        // Находим индекс известного аккаунта
+        int indexId1 = accounts.getFirst().getId() == id1 ? 0 : 1;
+        int indexId2 = 1 - indexId1; // если 0 то 1, если 1 то 0
+
+        long id2 = customerProfile.getAccounts().get(indexId2).getId();
+        float balance2 = customerProfile.getAccounts().get(indexId2).getBalance();
 
         float transfer = MoneyMath.add(deposit1, RandomData.getDeposit());
 
@@ -247,10 +282,17 @@ public class TransferTest extends BaseTest {
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        int id2 = validatableResponse.extract().path("id");
+
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = MoneyMath.add(deposit1, RandomData.getDeposit());
@@ -297,11 +339,22 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToYourOwnAccountNegativeSumTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        int id2 = validatableResponse.extract().path("id");
-        float balance2 = validatableResponse.extract().path("balance");
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        List<Account> accounts = customerProfile.getAccounts();
+        // Находим индекс известного аккаунта
+        int indexId1 = accounts.getFirst().getId() == id1 ? 0 : 1;
+        int indexId2 = 1 - indexId1; // если 0 то 1, если 1 то 0
+
+        long id2 = customerProfile.getAccounts().get(indexId2).getId();
+        float balance2 = customerProfile.getAccounts().get(indexId2).getBalance();
 
         float transfer = -RandomData.getDeposit();
 
@@ -346,10 +399,16 @@ public class TransferTest extends BaseTest {
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        int id2 = validatableResponse.extract().path("id");
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = -RandomData.getDeposit();
@@ -460,10 +519,16 @@ public class TransferTest extends BaseTest {
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        ValidatableResponse validatableResponse = new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        int id2 = validatableResponse.extract().path("id");
+        //через гет получаем номер аккаунта
+        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = RandomData.getDeposit();
