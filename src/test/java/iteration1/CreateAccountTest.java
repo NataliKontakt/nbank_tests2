@@ -1,84 +1,48 @@
 package iteration1;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
-
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
+import generators.RandomData;
+import io.restassured.response.ValidatableResponse;
+import models.CreateUserRequest;
+import models.CustomerAccountsResponse;
 import org.junit.jupiter.api.Test;
+import requests.AdminCreateUserRequester;
+import requests.CreateAccountRequester;
+import requests.UpdateCustomerProfileRequester;
+import specs.RequestSpec;
+import specs.ResponseSpec;
 
-import java.util.List;
+import static models.UserRole.USER;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.hasItem;
-
-public class CreateAccountTest {
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(
-                List.of(new RequestLoggingFilter(),
-                        new ResponseLoggingFilter()));
-    }
+public class CreateAccountTest extends BaseTest {
 
     @Test
     public void userCanCreateAccountTest() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "kate2000121",
-                          "password": "Kate2000#",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
 
-        // получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "kate2000121",
-                          "password": "Kate2000#"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+        //создание объекта пользователя
+        CreateUserRequest user1 = CreateUserRequest.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getUserPassword())
+                .role(USER.toString())
+                .build();
+        // создание пользователя
+        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+                ResponseSpec.entityWasCreatad())
+                .post(user1);
 
         // создаем аккаунт(счет)
-        String account = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().path("accountNumber");
+        ValidatableResponse response =  new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.entityWasCreatad())
+                .post(null);
+        String accountNumber = response.extract().jsonPath().getString("accountNumber");
 
         // запросить все аккаунты пользователя и проверить, что наш аккаунт там
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("accountNumber", hasItem(account));
+
+        CustomerAccountsResponse customerProfileNew = new UpdateCustomerProfileRequester(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                ResponseSpec.requestReturnsOk())
+                .getAccounts();
+
+        softly.assertThat(accountNumber).isEqualTo(customerProfileNew.getAccounts().getFirst().getAccountNumber());
+
     }
 }
