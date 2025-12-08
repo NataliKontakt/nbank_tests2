@@ -8,6 +8,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import requests.AdminCreateUserRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
@@ -30,11 +33,12 @@ public class CreateUserTest extends BaseTest {
                 .build();
 
         // создание пользователя
-        CreateUserResponse actualUser = new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        CreateUserResponse actualUser = new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
-                .post(user1)
-                        .extract()
-                                .as(CreateUserResponse.class);
+                .post(user1);
+
         softly.assertThat(user1.getUsername()).isEqualTo(actualUser.getUsername());
         softly.assertThat(user1.getPassword()).isNotEqualTo(actualUser.getPassword());
         softly.assertThat(user1.getRole()).isEqualTo(actualUser.getRole());
@@ -101,7 +105,9 @@ public class CreateUserTest extends BaseTest {
                 .build();
 
         // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.requestReturnsBadRequest(errorKey, errorValue))
                 .post(user1);
     }

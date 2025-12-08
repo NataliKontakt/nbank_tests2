@@ -2,11 +2,16 @@ package iteration1;
 
 import generators.RandomData;
 import models.CreateUserRequest;
+import models.CreateUserResponse;
 import models.LoginRequest;
+import models.LoginResponse;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import requests.AdminCreateUserRequester;
 import requests.LoginUserRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
@@ -21,7 +26,9 @@ public class LoginUserTest extends BaseTest {
                 .password("admin")
                 .build();
 
-        new LoginUserRequester(RequestSpec.unauthSpec(),
+        new ValidatedCrudRequester<LoginResponse>(
+                RequestSpec.unauthSpec(),
+                Endpoint.LOGIN,
                 ResponseSpec.requestReturnsOk())
                 .post(userAdmin);
     }
@@ -35,7 +42,9 @@ public class LoginUserTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
@@ -46,7 +55,9 @@ public class LoginUserTest extends BaseTest {
                 .build();
 
         // получаем токен юзера
-        new LoginUserRequester(RequestSpec.unauthSpec(),
+        new CrudRequester(
+                RequestSpec.unauthSpec(),
+                Endpoint.LOGIN,
                 ResponseSpec.requestReturnsOk())
                 .post(userLogin)
                 .header("Authorization", Matchers.notNullValue());

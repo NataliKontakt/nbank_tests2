@@ -2,12 +2,16 @@ package iteration1;
 
 import generators.RandomData;
 import io.restassured.response.ValidatableResponse;
+import models.CreateAccountResponse;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
 import org.junit.jupiter.api.Test;
 import requests.AdminCreateUserRequester;
 import requests.CreateAccountRequester;
 import requests.UpdateCustomerProfileRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
@@ -25,15 +29,18 @@ public class CreateAccountTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
         // создаем аккаунт(счет)
-        ValidatableResponse response =  new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        CreateAccountResponse response =  new ValidatedCrudRequester<CreateAccountResponse>(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        String accountNumber = response.extract().jsonPath().getString("accountNumber");
+        String accountNumber = response.getAccountNumber();
 
         // запросить все аккаунты пользователя и проверить, что наш аккаунт там
 
