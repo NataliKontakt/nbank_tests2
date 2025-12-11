@@ -1,19 +1,18 @@
 package iteration1;
 
 import generators.RandomData;
-import io.restassured.response.ValidatableResponse;
+import models.Account;
 import models.CreateAccountResponse;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.UpdateCustomerProfileRequester;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpec;
 import specs.ResponseSpec;
+
+import java.util.List;
 
 import static models.UserRole.USER;
 
@@ -44,12 +43,14 @@ public class CreateAccountTest extends BaseTest {
 
         // запросить все аккаунты пользователя и проверить, что наш аккаунт там
 
-        CustomerAccountsResponse customerProfileNew = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
-        softly.assertThat(accountNumber).isEqualTo(customerProfileNew.getAccounts().getFirst().getAccountNumber());
+        List<Account> accounts = customerProfile.getAccounts();
+        softly.assertThat(accountNumber).isEqualTo(accounts.getFirst().getAccountNumber());
 
     }
 }

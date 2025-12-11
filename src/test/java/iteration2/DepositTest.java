@@ -3,16 +3,19 @@ package iteration2;
 import generators.MoneyMath;
 import generators.RandomData;
 import iteration1.BaseTest;
-import models.CreateUserRequest;
-import models.CustomerAccountsResponse;
-import models.DepositRequest;
+import models.*;
 import org.junit.jupiter.api.*;
 import requests.AdminCreateUserRequester;
 import requests.CreateAccountRequester;
 import requests.DepositRequester;
 import requests.UpdateCustomerProfileRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpec;
 import specs.ResponseSpec;
+
+import java.util.List;
 
 import static models.UserRole.USER;
 import static specs.ResponseSpec.errorDepositCannotExceed_5000;
@@ -35,20 +38,23 @@ public class DepositTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
         // создаем аккаунт(счет)
-        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester (RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
 
         //через гет получаем номер аккаунта
-        customerProfile = new UpdateCustomerProfileRequester(
+        customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         id = customerProfile.getAccounts().getFirst().getId();
         balance = customerProfile.getAccounts().getFirst().getBalance();
@@ -57,15 +63,17 @@ public class DepositTest extends BaseTest {
     @AfterEach
     public void assertTest(TestInfo testInfo){
         //через гет получаем новый баланс и сверяем с ожидаемым
-        customerProfileNew = new UpdateCustomerProfileRequester(
+        customerProfileNew = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
+        List<Account> accounts = customerProfileNew.getAccounts();
 
         if (testInfo.getTags().contains("Positive")) {
-            softly.assertThat(expectedBalance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
+            softly.assertThat(expectedBalance).isEqualTo(accounts.getFirst().getBalance());
         } else if (testInfo.getTags().contains("Negative")) {
-            softly.assertThat(balance).isEqualTo(customerProfileNew.getAccounts().getFirst().getBalance());
+            softly.assertThat(balance).isEqualTo(accounts.getFirst().getBalance());
         }
 
     }
@@ -78,7 +86,8 @@ public class DepositTest extends BaseTest {
         float deposit = RandomData.getDeposit();
         expectedBalance = MoneyMath.add(balance, deposit);
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester (RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id)
