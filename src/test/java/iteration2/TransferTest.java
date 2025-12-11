@@ -7,6 +7,9 @@ import models.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import requests.*;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
@@ -33,20 +36,23 @@ public class TransferTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
         // создаем аккаунт(счет)
-        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
 
         //через гет получаем номер аккаунта
-        customerProfile1 = new UpdateCustomerProfileRequester(
+        customerProfile1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         id1 = customerProfile1.getAccounts().getFirst().getId();
         balance1 = customerProfile1.getAccounts().getFirst().getBalance();
@@ -54,7 +60,8 @@ public class TransferTest extends BaseTest {
         // вносим депозит на аккаунт 1 пользователя
         deposit1 = RandomData.getDeposit();
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id1)
@@ -65,14 +72,16 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanMakeTransferToYourOwnAccountTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         List<Account> accounts = customerProfile.getAccounts();
         // Находим индекс известного аккаунта
@@ -83,7 +92,8 @@ public class TransferTest extends BaseTest {
 
         // вносим депозит на 2 счет того же пользователя
         float deposit2 = RandomData.getDeposit();
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id2)
@@ -98,15 +108,17 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsOk())
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
         float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
         float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
@@ -132,26 +144,30 @@ public class TransferTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание 2 пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = MoneyMath.subtract(deposit1, 1);
 
-        new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id2)
@@ -164,19 +180,22 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsOk())
                 .post(transferRequest);
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
-        CustomerAccountsResponse response2 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response2 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
         float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
         float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
@@ -202,15 +221,17 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsOk())
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -222,14 +243,16 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToYourOwnAccountMoreThenBalanseTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         List<Account> accounts = customerProfile.getAccounts();
         // Находим индекс известного аккаунта
@@ -247,15 +270,17 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsBadRequest(errorInvalidTransfer))
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -277,27 +302,31 @@ public class TransferTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание 2 пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
 
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = MoneyMath.add(deposit1, RandomData.getDeposit());
 
-        new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id2)
@@ -310,20 +339,23 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsBadRequest(errorInvalidTransfer))
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
-        CustomerAccountsResponse response2 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response2 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -339,14 +371,16 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToYourOwnAccountNegativeSumTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         List<Account> accounts = customerProfile.getAccounts();
         // Находим индекс известного аккаунта
@@ -364,15 +398,17 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsBadRequest(errorTranslationLessZero))
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -394,26 +430,30 @@ public class TransferTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание 2 пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = -RandomData.getDeposit();
 
-        new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id2)
@@ -426,20 +466,23 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsBadRequest(errorTranslationLessZero))
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
-        CustomerAccountsResponse response2 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response2 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -462,15 +505,17 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsBadRequest(errorInvalidTransfer))
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -488,15 +533,17 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -514,26 +561,30 @@ public class TransferTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание 2 пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = RandomData.getDeposit();
 
-        new DepositRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id2)
@@ -546,15 +597,17 @@ public class TransferTest extends BaseTest {
                 .amount(transfer)
                 .build();
 
-        new TransferRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse response1 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)

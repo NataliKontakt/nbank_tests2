@@ -23,8 +23,8 @@ import static specs.ResponseSpec.errorDepositLessZero;
 
 public class DepositTest extends BaseTest {
     CreateUserRequest user1;
-    CustomerAccountsResponse customerProfile;
-    CustomerAccountsResponse customerProfileNew;
+    CustomerAccountsResponse customerAccounts;
+    CustomerAccountsResponse customerAccountsNew;
     long id;
     float balance;
     float expectedBalance;
@@ -44,31 +44,31 @@ public class DepositTest extends BaseTest {
                 .post(user1);
 
         // создаем аккаунт(счет)
-        new CrudRequester (RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
 
         //через гет получаем номер аккаунта
-        customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
+        customerAccounts = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
                 .get();
 
-        id = customerProfile.getAccounts().getFirst().getId();
-        balance = customerProfile.getAccounts().getFirst().getBalance();
+        id = customerAccounts.getAccounts().getFirst().getId();
+        balance = customerAccounts.getAccounts().getFirst().getBalance();
     }
 
     @AfterEach
     public void assertTest(TestInfo testInfo){
         //через гет получаем новый баланс и сверяем с ожидаемым
-        customerProfileNew = new ValidatedCrudRequester<CustomerAccountsResponse>(
+        customerAccountsNew = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
                 .get();
-        List<Account> accounts = customerProfileNew.getAccounts();
+        List<Account> accounts = customerAccountsNew.getAccounts();
 
         if (testInfo.getTags().contains("Positive")) {
             softly.assertThat(expectedBalance).isEqualTo(accounts.getFirst().getBalance());
@@ -86,7 +86,7 @@ public class DepositTest extends BaseTest {
         float deposit = RandomData.getDeposit();
         expectedBalance = MoneyMath.add(balance, deposit);
 
-        new CrudRequester (RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
@@ -103,7 +103,8 @@ public class DepositTest extends BaseTest {
         // вносим депозит
         float deposit = RandomData.getDeposit();
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id)
@@ -114,7 +115,8 @@ public class DepositTest extends BaseTest {
         float deposit2 = 5000;
         expectedBalance = balance + deposit + deposit2;
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(DepositRequest.builder()
                         .id(id)
@@ -129,7 +131,8 @@ public class DepositTest extends BaseTest {
         // вносим депозит
         float deposit = -1;
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsBadRequest(errorDepositLessZero))
                 .post(DepositRequest.builder()
                         .id(id)
@@ -144,7 +147,8 @@ public class DepositTest extends BaseTest {
         // вносим депозит
         float deposit = 5001;
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsBadRequest(errorDepositCannotExceed_5000))
                 .post(DepositRequest.builder()
                         .id(id)
@@ -162,7 +166,8 @@ public class DepositTest extends BaseTest {
         // вносим депозит
         float deposit = RandomData.getDeposit();
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(DepositRequest.builder()
                         .id(nonExistingId)
@@ -181,28 +186,32 @@ public class DepositTest extends BaseTest {
                 .role(USER.toString())
                 .build();
         // создание 2 пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
+        new CrudRequester(RequestSpec.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpec.entityWasCreatad())
                 .post(user2);
 
         // создаем аккаунт(счет) 2 пользователя
-        new CreateAccountRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
 
         //через гет получаем номер аккаунта 2 пользователя
-        CustomerAccountsResponse customerProfile2 = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerAccounts2 = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
 
-        long id2 = customerProfile2.getAccounts().getFirst().getId();
+        long id2 = customerAccounts2.getAccounts().getFirst().getId();
 
         // вносим депозит
         float deposit = RandomData.getDeposit();
 
-        new DepositRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(DepositRequest.builder()
                         .id(id2)

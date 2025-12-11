@@ -35,10 +35,15 @@ public enum Endpoint {
             TransferResponse.class
     ),
 
-    CUSTOMER_PROFILE(
+    CUSTOMER_PROFILE_GET(
             "customer/profile",
             BaseModel.class,
             CustomerProfileResponse.class
+    ),
+    CUSTOMER_PROFILE_UPDATE(
+            "customer/profile",
+            BaseModel.class,
+            UpdateProfileResponse.class
     ),
 
     CUSTOMER_ACCOUNTS(
