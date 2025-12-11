@@ -2,6 +2,7 @@ package iteration2;
 
 import generators.MoneyMath;
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.*;
 import org.junit.jupiter.api.*;
@@ -28,11 +29,7 @@ public class DepositTest extends BaseTest {
     @BeforeEach
     public void prepareData() {
         //создание объекта пользователя
-        user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        user1 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -176,11 +173,7 @@ public class DepositTest extends BaseTest {
     public void depositToSomeoneAccountIsNotPossibleTest() {
 
         //создание объекта 2 пользователя
-        CreateUserRequest user2 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        CreateUserRequest user2 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание 2 пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,

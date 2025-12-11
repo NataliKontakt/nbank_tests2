@@ -1,6 +1,7 @@
 package iteration1;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
 import models.LoginRequest;
@@ -34,11 +35,7 @@ public class LoginUserTest extends BaseTest {
     @Test
     public void userCanGenerateAuthTokenTest() {
         // создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        CreateUserRequest user1 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание пользователя
         new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpec.adminSpec(),

@@ -1,6 +1,7 @@
 package iteration1;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
 import org.junit.jupiter.api.Test;
@@ -25,11 +26,7 @@ public class CreateUserTest extends BaseTest {
     public void adminCanCreateUserWithCorrectData() {
 
         //создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        CreateUserRequest user1 = RandomModelGenerator.generate(CreateUserRequest.class);
 
         // создание пользователя
         CreateUserResponse actualUser = new ValidatedCrudRequester<CreateUserResponse>(

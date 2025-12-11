@@ -2,11 +2,11 @@ package iteration2;
 
 import generators.MoneyMath;
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import requests.*;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
@@ -30,11 +30,7 @@ public class TransferTest extends BaseTest {
     @BeforeEach
     public void prepareData() {
         //создание объекта пользователя
-        user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        user1 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -138,11 +134,7 @@ public class TransferTest extends BaseTest {
     public void userCanMakeTransferToOtherOwnAccountTest() {
 
         //создание объекта 2 пользователя
-        user2 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        user2 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание 2 пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -296,11 +288,7 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToOtherOwnAccountMoreThenBalansTest() {
         //создание объекта 2 пользователя
-        user2 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        user2 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание 2 пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -424,11 +412,7 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToOtherOwnAccountNegativeSumTest() {
         //создание объекта 2 пользователя
-        user2 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        user2 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание 2 пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -555,11 +539,7 @@ public class TransferTest extends BaseTest {
     public void userCanNotMakeTransferFromOtherOwnAccountTest() {
 
         //создание объекта 2 пользователя
-        user2 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        user2 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание 2 пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,

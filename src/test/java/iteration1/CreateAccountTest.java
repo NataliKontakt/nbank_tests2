@@ -1,6 +1,7 @@
 package iteration1;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import models.Account;
 import models.CreateAccountResponse;
 import models.CreateUserRequest;
@@ -22,11 +23,8 @@ public class CreateAccountTest extends BaseTest {
     public void userCanCreateAccountTest() {
 
         //создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        CreateUserRequest user1 = RandomModelGenerator.generate(CreateUserRequest.class);
+
         // создание пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,

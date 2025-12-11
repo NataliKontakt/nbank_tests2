@@ -1,6 +1,7 @@
 package iteration2;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.CreateUserRequest;
 import models.CustomerProfileResponse;
@@ -27,11 +28,7 @@ public class ChangingNameInProfileTest extends BaseTest {
     @Test
     public void userCanChangeNameInProfileTest() {
         //создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        CreateUserRequest user1 = RandomModelGenerator.generate(CreateUserRequest.class);
         // создание пользователя
         new CrudRequester(RequestSpec.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -72,11 +69,7 @@ public class ChangingNameInProfileTest extends BaseTest {
     @ParameterizedTest
     public void nameInProfileMustContainTwoWordsTest(String name) {
         //создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
+        CreateUserRequest user1 = RandomModelGenerator.generate(CreateUserRequest.class);
 
         // создание пользователя
         new CrudRequester(RequestSpec.adminSpec(),
