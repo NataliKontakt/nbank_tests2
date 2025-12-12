@@ -1,6 +1,5 @@
 package iteration1;
 
-import generators.RandomData;
 import generators.RandomModelGenerator;
 import models.Account;
 import models.CreateAccountResponse;
@@ -14,8 +13,6 @@ import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import java.util.List;
-
-import static models.UserRole.USER;
 
 public class CreateAccountTest extends BaseTest {
 

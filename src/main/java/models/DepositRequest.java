@@ -1,5 +1,6 @@
 package models;
 
+import generators.annotations.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class DepositRequest extends BaseModel{
+    @Optional
     private long id;
+    @Optional
     private float balance;
 }

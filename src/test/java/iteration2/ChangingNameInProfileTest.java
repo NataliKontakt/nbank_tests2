@@ -19,7 +19,6 @@ import specs.ResponseSpec;
 
 import java.util.stream.Stream;
 
-import static models.UserRole.USER;
 import static specs.ResponseSpec.errorNameMustContainTwoWords;
 
 
@@ -41,7 +40,7 @@ public class ChangingNameInProfileTest extends BaseTest {
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsOk())
-                .update(UpdateProfileRequest.builder().name(expectedName).build());
+                .update(RandomModelGenerator.generate(expectedName, UpdateProfileRequest.class));
 
         //Проверяем, что новое имя сохранилось
         CustomerProfileResponse customerProfile = new ValidatedCrudRequester<CustomerProfileResponse>(

@@ -1,6 +1,8 @@
 package generators;
 
 import com.github.curiousoddman.rgxgen.RgxGen;
+import generators.annotations.GeneratingRule;
+import generators.annotations.Optional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -10,8 +12,61 @@ import java.util.*;
 public class RandomModelGenerator {
 
     private static final Random random = new Random();
+    // Метод для генерации без optional значений
+    public static <T> T generate(Class<T> clazz) {
+        return generateInternal(clazz, new Object[0]);
+    }
 
-    public static  <T> T generate(Class<T> clazz) {
+    // Метод для генерации с optional значениями
+    public static <T> T generate(Object... valuesAndClass) {
+        @SuppressWarnings("unchecked")
+        Class<T> clazz = (Class<T>) valuesAndClass[valuesAndClass.length - 1];
+        Object[] optionalValues = Arrays.copyOf(valuesAndClass, valuesAndClass.length - 1);
+        return generateInternal(clazz, optionalValues);
+    }
+
+    private static <T> T generateInternal(Class<T> clazz, Object[] optionalValues) {
+        try {
+            T instance = clazz.getDeclaredConstructor().newInstance();
+            List<Field> fields = getAllFields(clazz);
+
+            List<Field> optionalFields = new ArrayList<>();
+            for (Field field : fields) {
+                if (field.getAnnotation(Optional.class) != null) {
+                    optionalFields.add(field);
+                }
+            }
+
+            if (optionalValues.length != optionalFields.size()) {
+                throw new IllegalArgumentException(
+                        String.format("Expected %d optional values for class %s, but got %d",
+                                optionalFields.size(), clazz.getSimpleName(), optionalValues.length)
+                );
+            }
+
+            int optionalIndex = 0;
+            for (Field field : fields) {
+                field.setAccessible(true);
+
+                if (field.getAnnotation(Optional.class) != null) {
+                    field.set(instance, optionalValues[optionalIndex++]);
+                    continue;
+                }
+
+                GeneratingRule rule = field.getAnnotation(GeneratingRule.class);
+                Object value = rule != null
+                        ? generateFromRegex(rule.regex(), field.getType())
+                        : generateRandomValue(field);
+
+                field.set(instance, value);
+            }
+
+            return instance;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate entity", e);
+        }
+    }
+    /*public static  <T> T generate(Class<T> clazz) {
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
             for (Field field : getAllFields(clazz)) {
@@ -30,7 +85,7 @@ public class RandomModelGenerator {
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate entity", e);
         }
-    }
+    }*/
 
     private static List<Field> getAllFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();

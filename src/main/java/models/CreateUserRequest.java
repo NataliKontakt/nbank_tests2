@@ -1,6 +1,6 @@
 package models;
 
-import generators.GeneratingRule;
+import generators.annotations.GeneratingRule;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

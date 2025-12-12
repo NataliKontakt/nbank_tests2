@@ -82,10 +82,8 @@ public class DepositTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(DepositRequest.builder()
-                        .id(id)
-                        .balance(deposit)
-                        .build());
+                .post(RandomModelGenerator.generate(id, deposit, DepositRequest.class));
+
     }
 
     //проверяем сложение не нулевого баланса с депозитом и граничное значение 5000
@@ -99,10 +97,7 @@ public class DepositTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(DepositRequest.builder()
-                        .id(id)
-                        .balance(deposit)
-                        .build());
+                .post(RandomModelGenerator.generate(id, deposit, DepositRequest.class));
 
         // вносим депозит еще
         float deposit2 = 5000;
@@ -111,10 +106,7 @@ public class DepositTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(DepositRequest.builder()
-                        .id(id)
-                        .balance(deposit2)
-                        .build());
+                .post(RandomModelGenerator.generate(id, deposit2, DepositRequest.class));
 
     }
 
@@ -127,10 +119,7 @@ public class DepositTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsBadRequest(errorDepositLessZero))
-                .post(DepositRequest.builder()
-                        .id(id)
-                        .balance(deposit)
-                        .build());
+                .post(RandomModelGenerator.generate(id, deposit, DepositRequest.class));
 
     }
 
@@ -143,10 +132,7 @@ public class DepositTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsBadRequest(errorDepositCannotExceed_5000))
-                .post(DepositRequest.builder()
-                        .id(id)
-                        .balance(deposit)
-                        .build());
+                .post(RandomModelGenerator.generate(id, deposit, DepositRequest.class));
 
     }
 
@@ -162,10 +148,8 @@ public class DepositTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsForbiddenRequest())
-                .post(DepositRequest.builder()
-                        .id(nonExistingId)
-                        .balance(deposit)
-                        .build());
+                .post(RandomModelGenerator.generate(nonExistingId, deposit, DepositRequest.class));
+
     }
 
     @Tag("Negative")
@@ -202,10 +186,7 @@ public class DepositTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsForbiddenRequest())
-                .post(DepositRequest.builder()
-                        .id(id2)
-                        .balance(deposit)
-                        .build());
+                .post(RandomModelGenerator.generate(id2, deposit, DepositRequest.class));
 
     }
 
