@@ -4,6 +4,7 @@ import generators.RandomData;
 import generators.RandomModelGenerator;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
+import models.comparison.ModelAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -35,9 +36,11 @@ public class CreateUserTest extends BaseTest {
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
-        softly.assertThat(user1.getUsername()).isEqualTo(actualUser.getUsername());
+        ModelAssertions.assertThatModels(user1,actualUser).match();
+
+/*        softly.assertThat(user1.getUsername()).isEqualTo(actualUser.getUsername());
         softly.assertThat(user1.getPassword()).isNotEqualTo(actualUser.getPassword());
-        softly.assertThat(user1.getRole()).isEqualTo(actualUser.getRole());
+        softly.assertThat(user1.getRole()).isEqualTo(actualUser.getRole());*/
     }
 
     public static Stream<Arguments> userInvalidData() {
