@@ -80,7 +80,7 @@ public class ChangingNameInProfileTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsBadRequest(errorNameMustContainTwoWords))
-                .update(UpdateProfileRequest.builder().name(name).build());
+                .update(RandomModelGenerator.generate(name, UpdateProfileRequest.class));
 
         //Проверяем, что новое имя сохранилось
         CustomerProfileResponse customerProfile = new ValidatedCrudRequester<CustomerProfileResponse>(
