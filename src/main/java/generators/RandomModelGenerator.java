@@ -1,7 +1,8 @@
 package generators;
 
 import com.github.curiousoddman.rgxgen.RgxGen;
-import generators.annotations.GeneratingRule;
+import generators.annotations.GeneratingDoubleRule;
+import generators.annotations.GeneratingStringRule;
 import generators.annotations.Optional;
 
 import java.lang.reflect.Field;
@@ -24,7 +25,30 @@ public class RandomModelGenerator {
         Object[] optionalValues = Arrays.copyOf(valuesAndClass, valuesAndClass.length - 1);
         return generateInternal(clazz, optionalValues);
     }
+    public static <T> T generate(Class<T> clazz, Map<String, Object> fixedValues) {
+        T instance = generate(clazz); // используем существующий метод без optional
 
+        if (fixedValues != null && !fixedValues.isEmpty()) {
+            for (Map.Entry<String, Object> entry : fixedValues.entrySet()) {
+                String fieldName = entry.getKey();
+                Object value = entry.getValue();
+
+                try {
+                    Field field = findField(clazz, fieldName);
+                    if (field == null) {
+                        throw new NoSuchFieldException(fieldName);
+                    }
+                    field.setAccessible(true);
+                    field.set(instance, value);
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            String.format("Failed to set fixed value for field '%s' in class %s",
+                                    fieldName, clazz.getSimpleName()), e);
+                }
+            }
+        }
+        return instance;
+    }
     private static <T> T generateInternal(Class<T> clazz, Object[] optionalValues) {
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
@@ -52,11 +76,17 @@ public class RandomModelGenerator {
                     field.set(instance, optionalValues[optionalIndex++]);
                     continue;
                 }
-
-                GeneratingRule rule = field.getAnnotation(GeneratingRule.class);
-                Object value = rule != null
-                        ? generateFromRegex(rule.regex(), field.getType())
-                        : generateRandomValue(field);
+                Object value;
+                GeneratingStringRule stringRule = field.getAnnotation(GeneratingStringRule.class);
+                if (stringRule != null) {
+                    value = generateFromRegex(stringRule.regex(), field.getType());
+                } else {
+                    // ← 2. ДОБАВЛЕНА ПРОВЕРКА НА GeneratingDoubleRule
+                    GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
+                    value = doubleRule != null
+                            ? generateFromDoubleRule(doubleRule, field.getType()) // ← вызов нового метода
+                            : generateRandomValue(field);
+                }
 
                 field.set(instance, value);
             }
@@ -66,26 +96,19 @@ public class RandomModelGenerator {
             throw new RuntimeException("Failed to generate entity", e);
         }
     }
-    /*public static  <T> T generate(Class<T> clazz) {
-        try {
-            T instance = clazz.getDeclaredConstructor().newInstance();
-            for (Field field : getAllFields(clazz)) {
-                field.setAccessible(true);
 
-                Object value;
-                GeneratingRule rule = field.getAnnotation(GeneratingRule.class);
-                if (rule != null) {
-                    value = generateFromRegex(rule.regex(), field.getType());
-                } else {
-                    value = generateRandomValue(field);
-                }
-                field.set(instance, value);
-            }
-            return instance;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate entity", e);
+    private static Object generateFromDoubleRule(GeneratingDoubleRule rule, Class<?> type) {
+        // Генерируем случайное число в диапазоне [min, max]
+        double value = rule.min() + (rule.max() - rule.min()) * random.nextDouble();
+
+        // Округляем до указанной точности
+        if (type.equals(Float.class) || type.equals(float.class)) {
+            return (float) Math.round(value * Math.pow(10, rule.precision())) / (float) Math.pow(10, rule.precision());
         }
-    }*/
+
+        // Для double и других типов
+        return Math.round(value * Math.pow(10, rule.precision())) / Math.pow(10, rule.precision());
+    }
 
     private static List<Field> getAllFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();
@@ -106,6 +129,8 @@ public class RandomModelGenerator {
             return random.nextLong();
         } else if (type.equals(Double.class) || type.equals(double.class)) {
             return random.nextDouble() * 100;
+        } else if (type.equals(Float.class) || type.equals(float.class)) {
+            return random.nextFloat() * 100;
         } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
             return random.nextBoolean();
         } else if (type.equals(List.class)) {
@@ -125,6 +150,10 @@ public class RandomModelGenerator {
             return Integer.parseInt(result);
         } else if (type.equals(Long.class) || type.equals(long.class)) {
             return Long.parseLong(result);
+        } else if (type.equals(Float.class) || type.equals(float.class)) { // ДОБАВЛЕНА ПОДДЕРЖКА FLOAT
+            return Float.parseFloat(result);
+        } else if (type.equals(Double.class) || type.equals(double.class)) { //  ДОБАВЛЕНА ПОДДЕРЖКА DOUBLE
+            return Double.parseDouble(result);
         } else {
             return result;
         }
@@ -142,5 +171,16 @@ public class RandomModelGenerator {
             }
         }
         return Collections.emptyList();
+    }
+    private static Field findField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            try {
+                return current.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                current = current.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException(fieldName);
     }
 }

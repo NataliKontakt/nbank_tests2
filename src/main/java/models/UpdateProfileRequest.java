@@ -1,6 +1,6 @@
 package models;
 
-import generators.annotations.Optional;
+import generators.annotations.GeneratingStringRule;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class UpdateProfileRequest extends BaseModel{
-    //@GeneratingRule(regex = "^[A-Z][a-z]{1,15} [A-Z][a-z]{1,15}$")
-    @Optional
+    @GeneratingStringRule(regex = "^[A-Z][a-z]{1,15} [A-Z][a-z]{1,15}$")
     private String name;
 }

@@ -1,5 +1,7 @@
 package models;
 
+import generators.annotations.GeneratingDoubleRule;
+import generators.annotations.GeneratingStringRule;
 import generators.annotations.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class DepositRequest extends BaseModel{
-    @Optional
     private long id;
-    @Optional
+    //@Optional
+    @GeneratingDoubleRule(min = 0.01, max = 5000.0, precision = 2)
     private float balance;
 }

@@ -1,12 +1,12 @@
 package iteration2;
 
-import generators.RandomData;
 import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.CreateUserRequest;
 import models.CustomerProfileResponse;
 import models.UpdateProfileRequest;
 import models.UpdateProfileResponse;
+import models.comparison.ModelAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -35,20 +35,20 @@ public class ChangingNameInProfileTest extends BaseTest {
                 .post(user1);
 
         //Изменяем имя
-        String expectedName = RandomData.getName();
-        new ValidatedCrudRequester<UpdateProfileResponse>(
+        UpdateProfileResponse customerProfileRequest = new ValidatedCrudRequester<UpdateProfileResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsOk())
-                .update(RandomModelGenerator.generate(expectedName, UpdateProfileRequest.class));
+                .update(RandomModelGenerator.generate(UpdateProfileRequest.class));
 
         //Проверяем, что новое имя сохранилось
-        CustomerProfileResponse customerProfile = new ValidatedCrudRequester<CustomerProfileResponse>(
+        CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_PROFILE_GET,
                 ResponseSpec.requestReturnsOk())
                 .get();
-        softly.assertThat(expectedName).isEqualTo(customerProfile.getName());
+        ModelAssertions.assertThatModels(customerProfileRequest,customerProfileResponse).match();
+        //softly.assertThat(expectedName).isEqualTo(customerProfile.getName());
     }
 
     public static Stream<Arguments> userInvalidName() {
