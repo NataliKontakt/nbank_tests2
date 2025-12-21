@@ -14,6 +14,7 @@ import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import java.util.List;
+import java.util.Map;
 
 import static specs.ResponseSpec.errorInvalidTransfer;
 import static specs.ResponseSpec.errorTranslationLessZero;
@@ -59,7 +60,9 @@ public class TransferTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(id1, deposit1, DepositRequest.class));
+                .post(RandomModelGenerator.generate(
+                        DepositRequest.class,
+                        Map.of("id", id1, "balance", deposit1)));
 
     }
 
@@ -89,7 +92,8 @@ public class TransferTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(id2, deposit2, DepositRequest.class));
+                .post(RandomModelGenerator.generate(DepositRequest.class,
+                        Map.of("id", id2, "balance", deposit2)));
 
         float transfer = MoneyMath.subtract(deposit1, 1);
 
@@ -152,7 +156,10 @@ public class TransferTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(id2, deposit2, DepositRequest.class));
+                .post(RandomModelGenerator.generate(
+                        DepositRequest.class,
+                        Map.of("id", id2, "balance", deposit2)));
+
 
         TransferRequest transferRequest = RandomModelGenerator.generate(id1, id2, transfer, TransferRequest.class);
 
@@ -292,7 +299,9 @@ public class TransferTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(id2, deposit2, DepositRequest.class));
+                .post(RandomModelGenerator.generate(DepositRequest.class,
+                        Map.of("id", id2, "balance", deposit2)));
+
 
         TransferRequest transferRequest = RandomModelGenerator.generate(id1, id2, transfer, TransferRequest.class);
 
@@ -404,7 +413,8 @@ public class TransferTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(id2, deposit2, DepositRequest.class));
+                .post(RandomModelGenerator.generate(DepositRequest.class,
+                        Map.of("id", id2, "balance", deposit2)));
 
         TransferRequest transferRequest = RandomModelGenerator.generate(id1, id2, transfer, TransferRequest.class);
 
@@ -516,7 +526,8 @@ public class TransferTest extends BaseTest {
         new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(id2, deposit2, DepositRequest.class));
+                .post(RandomModelGenerator.generate(DepositRequest.class,
+                        Map.of("id", id2, "balance", deposit2)));
 
         TransferRequest transferRequest = RandomModelGenerator.generate(id2, id1, transfer, TransferRequest.class);
 
