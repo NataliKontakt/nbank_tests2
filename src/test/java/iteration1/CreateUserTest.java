@@ -1,6 +1,5 @@
 package iteration1;
 
-import generators.RandomData;
 import generators.RandomModelGenerator;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
@@ -18,7 +17,6 @@ import specs.ResponseSpec;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static models.UserRole.USER;
 import static specs.ResponseSpec.*;
 
 public class CreateUserTest extends BaseTest {
@@ -37,10 +35,6 @@ public class CreateUserTest extends BaseTest {
                 .post(user1);
 
         ModelAssertions.assertThatModels(user1,actualUser).match();
-
-/*        softly.assertThat(user1.getUsername()).isEqualTo(actualUser.getUsername());
-        softly.assertThat(user1.getPassword()).isNotEqualTo(actualUser.getPassword());
-        softly.assertThat(user1.getRole()).isEqualTo(actualUser.getRole());*/
     }
 
     public static Stream<Arguments> userInvalidData() {

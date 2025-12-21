@@ -13,78 +13,67 @@ import java.util.*;
 public class RandomModelGenerator {
 
     private static final Random random = new Random();
+
     // Метод для генерации без optional значений
     public static <T> T generate(Class<T> clazz) {
-        return generateInternal(clazz, new Object[0]);
+        return generateWithFixed(clazz, Collections.emptyMap());
     }
 
-    // Метод для генерации с optional значениями
+    // Метод с фиксированными полями по имени (самый удобный и рекомендуемый)
+    public static <T> T generate(Class<T> clazz, Map<String, Object> fixedValues) {
+        return generateWithFixed(clazz, fixedValues != null ? fixedValues : Collections.emptyMap());
+    }
+
+    // Старый varargs-метод оставлен для совместимости
     public static <T> T generate(Object... valuesAndClass) {
+        if (valuesAndClass == null || valuesAndClass.length == 0) {
+            throw new IllegalArgumentException("At least class must be provided");
+        }
         @SuppressWarnings("unchecked")
         Class<T> clazz = (Class<T>) valuesAndClass[valuesAndClass.length - 1];
-        Object[] optionalValues = Arrays.copyOf(valuesAndClass, valuesAndClass.length - 1);
-        return generateInternal(clazz, optionalValues);
-    }
-    public static <T> T generate(Class<T> clazz, Map<String, Object> fixedValues) {
-        T instance = generate(clazz); // используем существующий метод без optional
+        Map<String, Object> fixed = new HashMap<>();
+        List<Field> optionalFields = getOptionalFields(clazz);
 
-        if (fixedValues != null && !fixedValues.isEmpty()) {
-            for (Map.Entry<String, Object> entry : fixedValues.entrySet()) {
-                String fieldName = entry.getKey();
-                Object value = entry.getValue();
-
-                try {
-                    Field field = findField(clazz, fieldName);
-                    if (field == null) {
-                        throw new NoSuchFieldException(fieldName);
-                    }
-                    field.setAccessible(true);
-                    field.set(instance, value);
-                } catch (Exception e) {
-                    throw new RuntimeException(
-                            String.format("Failed to set fixed value for field '%s' in class %s",
-                                    fieldName, clazz.getSimpleName()), e);
-                }
-            }
+        if (valuesAndClass.length - 1 > optionalFields.size()) {
+            throw new IllegalArgumentException("Too many optional values provided");
         }
-        return instance;
+
+        for (int i = 0; i < valuesAndClass.length - 1; i++) {
+            Field field = optionalFields.get(i);
+            fixed.put(field.getName(), valuesAndClass[i]);
+        }
+
+        return generateWithFixed(clazz, fixed);
     }
-    private static <T> T generateInternal(Class<T> clazz, Object[] optionalValues) {
+
+    // Основной метод генерации с приоритетами
+    private static <T> T generateWithFixed(Class<T> clazz, Map<String, Object> fixedValues) {
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
             List<Field> fields = getAllFields(clazz);
 
-            List<Field> optionalFields = new ArrayList<>();
-            for (Field field : fields) {
-                if (field.getAnnotation(Optional.class) != null) {
-                    optionalFields.add(field);
-                }
-            }
-
-            if (optionalValues.length != optionalFields.size()) {
-                throw new IllegalArgumentException(
-                        String.format("Expected %d optional values for class %s, but got %d",
-                                optionalFields.size(), clazz.getSimpleName(), optionalValues.length)
-                );
-            }
-
-            int optionalIndex = 0;
             for (Field field : fields) {
                 field.setAccessible(true);
+                String fieldName = field.getName();
 
-                if (field.getAnnotation(Optional.class) != null) {
-                    field.set(instance, optionalValues[optionalIndex++]);
+                // 1. Самый высокий приоритет: значение из fixedValues (по имени поля)
+                if (fixedValues.containsKey(fieldName)) {
+                    field.set(instance, fixedValues.get(fieldName));
                     continue;
                 }
+
+                // 2. Если поле @Optional и значение не передано — генерируем как обычное поле
+                // (никакого continue — просто идём дальше по логике генерации)
+
+                // 3. Генерация по аннотациям или рандомно
                 Object value;
                 GeneratingStringRule stringRule = field.getAnnotation(GeneratingStringRule.class);
                 if (stringRule != null) {
                     value = generateFromRegex(stringRule.regex(), field.getType());
                 } else {
-                    // ← 2. ДОБАВЛЕНА ПРОВЕРКА НА GeneratingDoubleRule
                     GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
                     value = doubleRule != null
-                            ? generateFromDoubleRule(doubleRule, field.getType()) // ← вызов нового метода
+                            ? generateFromDoubleRule(doubleRule, field.getType())
                             : generateRandomValue(field);
                 }
 
@@ -98,15 +87,10 @@ public class RandomModelGenerator {
     }
 
     private static Object generateFromDoubleRule(GeneratingDoubleRule rule, Class<?> type) {
-        // Генерируем случайное число в диапазоне [min, max]
         double value = rule.min() + (rule.max() - rule.min()) * random.nextDouble();
-
-        // Округляем до указанной точности
         if (type.equals(Float.class) || type.equals(float.class)) {
-            return (float) Math.round(value * Math.pow(10, rule.precision())) / (float) Math.pow(10, rule.precision());
+            return (float) (Math.round(value * Math.pow(10, rule.precision())) / Math.pow(10, rule.precision()));
         }
-
-        // Для double и других типов
         return Math.round(value * Math.pow(10, rule.precision())) / Math.pow(10, rule.precision());
     }
 
@@ -117,6 +101,16 @@ public class RandomModelGenerator {
             clazz = clazz.getSuperclass();
         }
         return fields;
+    }
+
+    private static List<Field> getOptionalFields(Class<?> clazz) {
+        List<Field> optional = new ArrayList<>();
+        for (Field field : getAllFields(clazz)) {
+            if (field.getAnnotation(Optional.class) != null) {
+                optional.add(field);
+            }
+        }
+        return optional;
     }
 
     private static Object generateRandomValue(Field field) {
@@ -138,8 +132,7 @@ public class RandomModelGenerator {
         } else if (type.equals(Date.class)) {
             return new Date(System.currentTimeMillis() - random.nextInt(1000000000));
         } else {
-            // Вложенный объект
-            return generate(type);
+            return generate(type); // вложенный объект
         }
     }
 
@@ -150,9 +143,9 @@ public class RandomModelGenerator {
             return Integer.parseInt(result);
         } else if (type.equals(Long.class) || type.equals(long.class)) {
             return Long.parseLong(result);
-        } else if (type.equals(Float.class) || type.equals(float.class)) { // ДОБАВЛЕНА ПОДДЕРЖКА FLOAT
+        } else if (type.equals(Float.class) || type.equals(float.class)) {
             return Float.parseFloat(result);
-        } else if (type.equals(Double.class) || type.equals(double.class)) { //  ДОБАВЛЕНА ПОДДЕРЖКА DOUBLE
+        } else if (type.equals(Double.class) || type.equals(double.class)) {
             return Double.parseDouble(result);
         } else {
             return result;
@@ -160,27 +153,13 @@ public class RandomModelGenerator {
     }
 
     private static List<String> generateRandomList(Field field) {
-        // Пытаемся определить generic-параметр списка
         Type genericType = field.getGenericType();
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) genericType;
-            Type actualType = pt.getActualTypeArguments()[0];
-            if (actualType == String.class) {
-                return List.of(UUID.randomUUID().toString().substring(0, 5),
-                        UUID.randomUUID().toString().substring(0, 5));
-            }
+        if (genericType instanceof ParameterizedType pt && pt.getActualTypeArguments()[0] == String.class) {
+            return List.of(
+                    UUID.randomUUID().toString().substring(0, 5),
+                    UUID.randomUUID().toString().substring(0, 5)
+            );
         }
         return Collections.emptyList();
-    }
-    private static Field findField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-        Class<?> current = clazz;
-        while (current != null && current != Object.class) {
-            try {
-                return current.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException e) {
-                current = current.getSuperclass();
-            }
-        }
-        throw new NoSuchFieldException(fieldName);
     }
 }

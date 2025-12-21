@@ -1,6 +1,5 @@
 package iteration2;
 
-import generators.MoneyMath;
 import generators.RandomData;
 import generators.RandomModelGenerator;
 import iteration1.BaseTest;
@@ -10,13 +9,14 @@ import org.junit.jupiter.api.*;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import java.util.List;
 import java.util.Map;
 
-import static models.UserRole.USER;
 import static specs.ResponseSpec.errorDepositCannotExceed_5000;
 import static specs.ResponseSpec.errorDepositLessZero;
 
@@ -28,60 +28,38 @@ public class DepositTest extends BaseTest {
     DepositResponse depositResponse;
     long id;
     float balance;
-    float expectedBalance;
 
     @BeforeEach
     public void prepareData(TestInfo testInfo) {
         //создание объекта пользователя
-        user1 = RandomModelGenerator.generate(CreateUserRequest.class);
-        // создание пользователя
-        new CrudRequester(RequestSpec.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpec.entityWasCreatad())
-                .post(user1);
+        user1 = AdminSteps.createUser();
 
         // создаем аккаунт(счет)
-        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpec.entityWasCreatad())
-                .post(null);
+        UserSteps.createAccount(user1.getUsername(), user1.getPassword());
 
         //через гет получаем номер аккаунта
-        customerAccounts = new ValidatedCrudRequester<CustomerAccountsResponse>(
-                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                Endpoint.CUSTOMER_ACCOUNTS,
-                ResponseSpec.requestReturnsOk())
-                .get();
+        customerAccounts = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
 
         id = customerAccounts.getAccounts().getFirst().getId();
         balance = customerAccounts.getAccounts().getFirst().getBalance();
 
         if (testInfo.getTags().contains("Negative")) {
-            accountsNegativeResponse = new ValidatedCrudRequester<CustomerAccountsResponse>(
-                    RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                    Endpoint.CUSTOMER_ACCOUNTS,
-                    ResponseSpec.requestReturnsOk())
-                    .get();
+            accountsNegativeResponse = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
         }
 
     }
 
     @AfterEach
-    public void assertTest(TestInfo testInfo){
+    public void assertTest(TestInfo testInfo) {
         //через гет получаем новый баланс и сверяем с ожидаемым
 
-        customerAccountsNew = new ValidatedCrudRequester<CustomerAccountsResponse>(
-                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
-                Endpoint.CUSTOMER_ACCOUNTS,
-                ResponseSpec.requestReturnsOk())
-                .get();
-        List<Account> accounts = customerAccountsNew.getAccounts();
+        customerAccountsNew = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
 
         if (testInfo.getTags().contains("Positive")) {
             ModelAssertions.assertThatModels(depositResponse, customerAccountsNew).match();
             //softly.assertThat(expectedBalance).isEqualTo(accounts.getFirst().getBalance());
         } else if (testInfo.getTags().contains("Negative")) {
-            ModelAssertions.assertThatModels(customerAccountsNew,accountsNegativeResponse).match();
+            ModelAssertions.assertThatModels(customerAccountsNew, accountsNegativeResponse).match();
             //softly.assertThat(balance).isEqualTo(customerAccounts.getAccounts().getFirst().getBalance());
         }
 
@@ -157,12 +135,9 @@ public class DepositTest extends BaseTest {
     @Tag("Negative")
     @Test
     public void depositCanNotBeOnNotExistAccount() {
-
         // несуществующий id
         int nonExistingId = 100500;
         // вносим депозит
-        float deposit = RandomData.getDeposit();
-
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsForbiddenRequest())
@@ -176,26 +151,13 @@ public class DepositTest extends BaseTest {
     public void depositToSomeoneAccountIsNotPossibleTest() {
 
         //создание объекта 2 пользователя
-        CreateUserRequest user2 = RandomModelGenerator.generate(CreateUserRequest.class);
-        // создание 2 пользователя
-        new CrudRequester(RequestSpec.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpec.entityWasCreatad())
-                .post(user2);
+        CreateUserRequest user2 = AdminSteps.createUser();
 
         // создаем аккаунт(счет) 2 пользователя
-        new CrudRequester(RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpec.entityWasCreatad())
-                .post(null);
+        UserSteps.createAccount(user2.getUsername(), user2.getPassword());
 
         //через гет получаем номер аккаунта 2 пользователя
-        CustomerAccountsResponse customerAccounts2 = new ValidatedCrudRequester<CustomerAccountsResponse>(
-                RequestSpec.authSpec(user2.getUsername(), user2.getPassword()),
-                Endpoint.CUSTOMER_ACCOUNTS,
-                ResponseSpec.requestReturnsOk())
-                .get();
-
+        CustomerAccountsResponse customerAccounts2 = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
 
         long id2 = customerAccounts2.getAccounts().getFirst().getId();
 

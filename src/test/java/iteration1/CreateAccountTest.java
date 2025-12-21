@@ -1,14 +1,13 @@
 package iteration1;
 
-import generators.RandomModelGenerator;
 import models.Account;
 import models.CreateAccountResponse;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
@@ -19,14 +18,7 @@ public class CreateAccountTest extends BaseTest {
     @Test
     public void userCanCreateAccountTest() {
 
-        //создание объекта пользователя
-        CreateUserRequest user1 = RandomModelGenerator.generate(CreateUserRequest.class);
-
-        // создание пользователя
-        new CrudRequester(RequestSpec.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpec.entityWasCreatad())
-                .post(user1);
+        CreateUserRequest user1 = AdminSteps.createUser();
 
         // создаем аккаунт(счет)
         CreateAccountResponse response =  new ValidatedCrudRequester<CreateAccountResponse>(
