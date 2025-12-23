@@ -1,9 +1,11 @@
 package iteration2;
 
-import generators.RandomData;
 import generators.RandomModelGenerator;
 import iteration1.BaseTest;
-import models.*;
+import models.CreateUserRequest;
+import models.CustomerAccountsResponse;
+import models.DepositRequest;
+import models.DepositResponse;
 import models.comparison.ModelAssertions;
 import org.junit.jupiter.api.*;
 import requests.skelethon.Endpoint;
@@ -13,9 +15,6 @@ import requests.steps.AdminSteps;
 import requests.steps.UserSteps;
 import specs.RequestSpec;
 import specs.ResponseSpec;
-
-import java.util.List;
-import java.util.Map;
 
 import static specs.ResponseSpec.errorDepositCannotExceed_5000;
 import static specs.ResponseSpec.errorDepositLessZero;
@@ -57,10 +56,8 @@ public class DepositTest extends BaseTest {
 
         if (testInfo.getTags().contains("Positive")) {
             ModelAssertions.assertThatModels(depositResponse, customerAccountsNew).match();
-            //softly.assertThat(expectedBalance).isEqualTo(accounts.getFirst().getBalance());
         } else if (testInfo.getTags().contains("Negative")) {
             ModelAssertions.assertThatModels(customerAccountsNew, accountsNegativeResponse).match();
-            //softly.assertThat(balance).isEqualTo(customerAccounts.getAccounts().getFirst().getBalance());
         }
 
     }
@@ -68,13 +65,13 @@ public class DepositTest extends BaseTest {
     @Tag("Positive")
     @Test
     public void userCanMakeDepositTest() {
+        DepositRequest depositRequest = RandomModelGenerator.generate(DepositRequest.class);
+        depositRequest.setId(id);
 
         depositResponse = new ValidatedCrudRequester<DepositResponse>(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(
-                        DepositRequest.class,
-                        Map.of("id", id)));
+                .post(depositRequest);
 
     }
 
@@ -82,53 +79,55 @@ public class DepositTest extends BaseTest {
     @Tag("Positive")
     @Test
     public void userCanMakeDepositNotZeroBalanceTest() {
-
+        DepositRequest depositRequest = RandomModelGenerator.generate(DepositRequest.class);
+        depositRequest.setId(id);
         // вносим депозит
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(
-                        DepositRequest.class,
-                        Map.of("id", id)));
+                .post(depositRequest);
 
         // вносим депозит еще
         float deposit2 = 5000;
 
+        DepositRequest depositRequest2 = RandomModelGenerator.generate(DepositRequest.class);
+        depositRequest2.setId(id);
+        depositRequest2.setBalance(deposit2);
+
         depositResponse = new ValidatedCrudRequester<DepositResponse>(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
-                .post(RandomModelGenerator.generate(
-                        DepositRequest.class,
-                        Map.of("id", id, "balance", deposit2)));
+                .post(depositRequest2);
 
     }
 
     @Tag("Negative")
     @Test
     public void depositCanNotBeNegativeTest() {
-        // вносим депозит
         float deposit = -1;
+        DepositRequest depositRequest = RandomModelGenerator.generate(DepositRequest.class);
+        depositRequest.setId(id);
+        depositRequest.setBalance(deposit);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsBadRequest(errorDepositLessZero))
-                .post(RandomModelGenerator.generate(
-                        DepositRequest.class,
-                        Map.of("id", id, "balance", deposit)));
+                .post(depositRequest);
 
     }
 
     @Tag("Negative")
     @Test
     public void depositCanNotBeMore5000Test() {
-        // вносим депозит
         float deposit = 5001;
+        DepositRequest depositRequest = RandomModelGenerator.generate(DepositRequest.class);
+        depositRequest.setId(id);
+        depositRequest.setBalance(deposit);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsBadRequest(errorDepositCannotExceed_5000))
-                .post(RandomModelGenerator.generate(DepositRequest.class,
-                        Map.of("id", id, "balance", deposit)));
+                .post(depositRequest);
 
     }
 
@@ -137,19 +136,20 @@ public class DepositTest extends BaseTest {
     public void depositCanNotBeOnNotExistAccount() {
         // несуществующий id
         int nonExistingId = 100500;
+        DepositRequest depositRequest = RandomModelGenerator.generate(DepositRequest.class);
+        depositRequest.setId(nonExistingId);
+
         // вносим депозит
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsForbiddenRequest())
-                .post(RandomModelGenerator.generate(DepositRequest.class,
-                        Map.of("id", nonExistingId)));
+                .post(depositRequest);
 
     }
 
     @Tag("Negative")
     @Test
     public void depositToSomeoneAccountIsNotPossibleTest() {
-
         //создание объекта 2 пользователя
         CreateUserRequest user2 = AdminSteps.createUser();
 
@@ -160,15 +160,14 @@ public class DepositTest extends BaseTest {
         CustomerAccountsResponse customerAccounts2 = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
 
         long id2 = customerAccounts2.getAccounts().getFirst().getId();
+        DepositRequest depositRequest = RandomModelGenerator.generate(DepositRequest.class);
+        depositRequest.setId(id2);
 
         // вносим депозит
-
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsForbiddenRequest())
-                .post(RandomModelGenerator.generate(DepositRequest.class,
-                        Map.of("id", id2)));
-
+                .post(depositRequest);
 
     }
 

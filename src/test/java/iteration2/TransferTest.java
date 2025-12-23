@@ -18,7 +18,6 @@ import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import java.util.List;
-import java.util.Map;
 
 import static specs.ResponseSpec.errorInvalidTransfer;
 import static specs.ResponseSpec.errorTranslationLessZero;
@@ -72,9 +71,11 @@ public class TransferTest extends BaseTest {
 
         float transfer = MoneyMath.subtract(deposit1, 1);
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(
-                TransferRequest.class,
-                Map.of("senderAccountId", id1, "receiverAccountId", id2, "amount", transfer));
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(id2);
+        transferRequest.setAmount(transfer);
+
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -115,9 +116,10 @@ public class TransferTest extends BaseTest {
 
         UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(
-                TransferRequest.class,
-                Map.of("senderAccountId", id1, "receiverAccountId", id2, "amount", transfer));
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(id2);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -146,9 +148,10 @@ public class TransferTest extends BaseTest {
 
         float transfer = MoneyMath.subtract(deposit1, 1);
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(
-                TransferRequest.class,
-                Map.of("senderAccountId", id1, "receiverAccountId", id1, "amount", transfer));
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(id1);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -182,9 +185,10 @@ public class TransferTest extends BaseTest {
 
         float transfer = MoneyMath.add(deposit1, RandomData.getDeposit());
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(
-                TransferRequest.class,
-                Map.of("senderAccountId", id1, "receiverAccountId", id2, "amount", transfer));
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(id2);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -220,7 +224,10 @@ public class TransferTest extends BaseTest {
 
         UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(id1, id2, transfer, TransferRequest.class);
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(id2);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -260,7 +267,10 @@ public class TransferTest extends BaseTest {
 
         float transfer = -RandomData.getDeposit();
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(id1, id2, transfer, TransferRequest.class);
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(id2);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -298,7 +308,10 @@ public class TransferTest extends BaseTest {
 
         UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(id1, id2, transfer, TransferRequest.class);
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(id2);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -324,8 +337,10 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToOnNotExistAccountTest() {
         float transfer = RandomData.getDeposit();
-
-        TransferRequest transferRequest = RandomModelGenerator.generate(id1, nonExistingId, transfer, TransferRequest.class);
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id1);
+        transferRequest.setReceiverAccountId(nonExistingId);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -344,8 +359,10 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferFromOnNotExistAccountTest() {
         float transfer = RandomData.getDeposit();
-
-        TransferRequest transferRequest = RandomModelGenerator.generate(nonExistingId, id1, transfer, TransferRequest.class);
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(nonExistingId);
+        transferRequest.setReceiverAccountId(id1);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
@@ -379,7 +396,10 @@ public class TransferTest extends BaseTest {
 
         UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
 
-        TransferRequest transferRequest = RandomModelGenerator.generate(id2, id1, transfer, TransferRequest.class);
+        TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
+        transferRequest.setSenderAccountId(id2);
+        transferRequest.setReceiverAccountId(id1);
+        transferRequest.setAmount(transfer);
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,

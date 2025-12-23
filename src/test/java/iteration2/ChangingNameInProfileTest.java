@@ -18,7 +18,6 @@ import requests.steps.AdminSteps;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static specs.ResponseSpec.errorNameMustContainTwoWords;
@@ -65,13 +64,13 @@ public class ChangingNameInProfileTest extends BaseTest {
     public void nameInProfileMustContainTwoWordsTest(String name) {
         //создание объекта пользователя
         CreateUserRequest user1 = AdminSteps.createUser();
-
+        UpdateProfileRequest updateProfileRequest = RandomModelGenerator.generate(UpdateProfileRequest.class);
+        updateProfileRequest.setName(name);
         //Изменяем имя
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsBadRequest(errorNameMustContainTwoWords))
-                .update(RandomModelGenerator.generate(UpdateProfileRequest.class, Map.of("name", name)));
-
+                .update(updateProfileRequest);
 
         //Проверяем, что новое имя сохранилось
         CustomerProfileResponse customerProfile = new ValidatedCrudRequester<CustomerProfileResponse>(
