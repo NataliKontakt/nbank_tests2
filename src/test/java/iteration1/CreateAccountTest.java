@@ -1,48 +1,43 @@
 package iteration1;
 
-import generators.RandomData;
-import io.restassured.response.ValidatableResponse;
+import models.Account;
+import models.CreateAccountResponse;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.UpdateCustomerProfileRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
-import static models.UserRole.USER;
+import java.util.List;
 
 public class CreateAccountTest extends BaseTest {
 
     @Test
     public void userCanCreateAccountTest() {
 
-        //создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
-        // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
-                ResponseSpec.entityWasCreatad())
-                .post(user1);
+        CreateUserRequest user1 = AdminSteps.createUser();
 
         // создаем аккаунт(счет)
-        ValidatableResponse response =  new CreateAccountRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        CreateAccountResponse response =  new ValidatedCrudRequester<CreateAccountResponse>(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
-        String accountNumber = response.extract().jsonPath().getString("accountNumber");
+        String accountNumber = response.getAccountNumber();
 
         // запросить все аккаунты пользователя и проверить, что наш аккаунт там
 
-        CustomerAccountsResponse customerProfileNew = new UpdateCustomerProfileRequester(
+        CustomerAccountsResponse customerProfile = new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk())
-                .getAccounts();
+                .get();
 
-        softly.assertThat(accountNumber).isEqualTo(customerProfileNew.getAccounts().getFirst().getAccountNumber());
+        List<Account> accounts = customerProfile.getAccounts();
+        softly.assertThat(accountNumber).isEqualTo(accounts.getFirst().getAccountNumber());
 
     }
 }

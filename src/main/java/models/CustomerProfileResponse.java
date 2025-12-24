@@ -18,6 +18,7 @@ public class CustomerProfileResponse extends BaseModel{
     private String name;
     private String role;
     private List<Account> accounts;
+}
 
     /*
     *     "id": 2,
@@ -26,4 +27,4 @@ public class CustomerProfileResponse extends BaseModel{
     "name": "John Smith",
     "role": "USER",
     "accounts": [*/
-}
+

@@ -5,11 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LoginResponse extends BaseModel{
-    private String role;
+public class Customer extends BaseModel{
+    private long id;
     private String username;
+    private String password;
+    private String name;
+    private String role;
+    private List<Account> accounts;
 }

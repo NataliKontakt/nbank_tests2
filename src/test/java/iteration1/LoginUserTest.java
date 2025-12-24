@@ -1,16 +1,16 @@
 package iteration1;
 
-import generators.RandomData;
 import models.CreateUserRequest;
 import models.LoginRequest;
+import models.LoginResponse;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.LoginUserRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpec;
 import specs.ResponseSpec;
-
-import static models.UserRole.USER;
 
 public class LoginUserTest extends BaseTest {
 
@@ -21,7 +21,9 @@ public class LoginUserTest extends BaseTest {
                 .password("admin")
                 .build();
 
-        new LoginUserRequester(RequestSpec.unauthSpec(),
+        new ValidatedCrudRequester<LoginResponse>(
+                RequestSpec.unauthSpec(),
+                Endpoint.LOGIN,
                 ResponseSpec.requestReturnsOk())
                 .post(userAdmin);
     }
@@ -29,15 +31,7 @@ public class LoginUserTest extends BaseTest {
     @Test
     public void userCanGenerateAuthTokenTest() {
         // создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
-        // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
-                ResponseSpec.entityWasCreatad())
-                .post(user1);
+        CreateUserRequest user1 = AdminSteps.createUser();
 
         // создание объекта для логирования
         LoginRequest userLogin = LoginRequest.builder()
@@ -46,7 +40,9 @@ public class LoginUserTest extends BaseTest {
                 .build();
 
         // получаем токен юзера
-        new LoginUserRequester(RequestSpec.unauthSpec(),
+        new CrudRequester(
+                RequestSpec.unauthSpec(),
+                Endpoint.LOGIN,
                 ResponseSpec.requestReturnsOk())
                 .post(userLogin)
                 .header("Authorization", Matchers.notNullValue());

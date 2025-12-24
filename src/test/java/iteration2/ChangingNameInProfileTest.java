@@ -1,21 +1,25 @@
 package iteration2;
 
-import generators.RandomData;
+import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.CreateUserRequest;
 import models.CustomerProfileResponse;
 import models.UpdateProfileRequest;
+import models.UpdateProfileResponse;
+import models.comparison.ModelAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.AdminCreateUserRequester;
-import requests.UpdateCustomerProfileRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpec;
 import specs.ResponseSpec;
 
 import java.util.stream.Stream;
-import static models.UserRole.USER;
+
 import static specs.ResponseSpec.errorNameMustContainTwoWords;
 
 
@@ -24,28 +28,22 @@ public class ChangingNameInProfileTest extends BaseTest {
     @Test
     public void userCanChangeNameInProfileTest() {
         //создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
-        // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
-                ResponseSpec.entityWasCreatad())
-                .post(user1);
+        CreateUserRequest user1 = AdminSteps.createUser();
 
         //Изменяем имя
-        String expectedName = RandomData.getName();
-        new UpdateCustomerProfileRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        UpdateProfileResponse customerProfileRequest = new ValidatedCrudRequester<UpdateProfileResponse>(
+                RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsOk())
-                .put(UpdateProfileRequest.builder().name(expectedName).build());
+                .update(RandomModelGenerator.generate(UpdateProfileRequest.class));
 
         //Проверяем, что новое имя сохранилось
-        CustomerProfileResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_PROFILE_GET,
                 ResponseSpec.requestReturnsOk())
-                .getProfile();
-        softly.assertThat(expectedName).isEqualTo(customerProfile.getName());
+                .get();
+        ModelAssertions.assertThatModels(customerProfileRequest, customerProfileResponse).match();
     }
 
     public static Stream<Arguments> userInvalidName() {
@@ -65,27 +63,21 @@ public class ChangingNameInProfileTest extends BaseTest {
     @ParameterizedTest
     public void nameInProfileMustContainTwoWordsTest(String name) {
         //создание объекта пользователя
-        CreateUserRequest user1 = CreateUserRequest.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getUserPassword())
-                .role(USER.toString())
-                .build();
-
-        // создание пользователя
-        new AdminCreateUserRequester(RequestSpec.adminSpec(),
-                ResponseSpec.entityWasCreatad())
-                .post(user1);
-
+        CreateUserRequest user1 = AdminSteps.createUser();
+        UpdateProfileRequest updateProfileRequest = RandomModelGenerator.generate(UpdateProfileRequest.class);
+        updateProfileRequest.setName(name);
         //Изменяем имя
-        new UpdateCustomerProfileRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+        new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsBadRequest(errorNameMustContainTwoWords))
-                .put(UpdateProfileRequest.builder().name(name).build());
+                .update(updateProfileRequest);
 
         //Проверяем, что новое имя сохранилось
-        CustomerProfileResponse customerProfile = new UpdateCustomerProfileRequester(
+        CustomerProfileResponse customerProfile = new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
+                Endpoint.CUSTOMER_PROFILE_GET,
                 ResponseSpec.requestReturnsOk())
-                .getProfile();
+                .get();
 
         softly.assertThat(customerProfile.getName()).isNull();
 
