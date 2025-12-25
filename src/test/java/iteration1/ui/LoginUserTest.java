@@ -7,6 +7,7 @@ import com.codeborne.selenide.Selenide;
 import models.CreateUserRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import requests.steps.AdminSteps;
 
 import java.util.Map;
 
@@ -17,7 +18,7 @@ public class LoginUserTest {
     @BeforeAll
     public static void setupSelenoid() {
         Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.3.254:3000";
+        Configuration.baseUrl = "http://192.168.0.249:3000";
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080";
 
@@ -33,8 +34,21 @@ public class LoginUserTest {
         $(Selectors.byAttribute("placeholder","Username")).sendKeys("admin");
         $(Selectors.byAttribute("placeholder","Password")).sendKeys("admin");
         $("button").click();
-        $(Selectors.byText("Admin panel")).should(Condition.visible);
+        $(Selectors.byText("Admin Panel")).should(Condition.visible);
 
+
+    }
+
+    @Test
+    public void userCanLoginWithCorrectDataTest(){
+        CreateUserRequest user = AdminSteps.createUser();
+        Selenide.open("/login");
+        $(Selectors.byAttribute("placeholder","Username")).sendKeys(user.getUsername());
+        $(Selectors.byAttribute("placeholder","Password")).sendKeys(user.getPassword());
+        $("button").click();
+
+        $(Selectors.byClassName("welcome-text")).should(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
+        //$(Selectors.byText("User Dashboard")).should(Condition.visible);
 
     }
 }
