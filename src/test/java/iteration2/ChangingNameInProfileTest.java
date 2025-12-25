@@ -1,7 +1,7 @@
 package iteration2;
 
 import generators.RandomModelGenerator;
-import iteration1.BaseTest;
+import iteration1.api.BaseTest;
 import models.CreateUserRequest;
 import models.CustomerProfileResponse;
 import models.UpdateProfileRequest;

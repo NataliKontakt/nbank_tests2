@@ -3,7 +3,7 @@ package iteration2;
 import generators.MoneyMath;
 import generators.RandomData;
 import generators.RandomModelGenerator;
-import iteration1.BaseTest;
+import iteration1.api.BaseTest;
 import models.Account;
 import models.CreateUserRequest;
 import models.CustomerAccountsResponse;
