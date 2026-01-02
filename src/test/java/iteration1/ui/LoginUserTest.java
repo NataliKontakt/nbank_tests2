@@ -48,7 +48,6 @@ public class LoginUserTest {
         $("button").click();
 
         $(Selectors.byClassName("welcome-text")).should(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
-        //$(Selectors.byText("User Dashboard")).should(Condition.visible);
 
     }
 }
