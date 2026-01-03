@@ -86,7 +86,7 @@ public class TransferTest {
         $(Selectors.byText("🚀 Send Transfer")).click();
 
 
-        // ШАГ 7: проверка, что усть аллерт на UI
+        // ШАГ 7: проверка, что есть аллерт на UI
 
         Alert alert = switchTo().alert();
         String alertText = alert.getText();
@@ -175,7 +175,7 @@ public class TransferTest {
         $(Selectors.byText("🚀 Send Transfer")).click();
 
 
-        // ШАГ 7: проверка, что усть аллерт на UI
+        // ШАГ 7: проверка, что есть аллерт на UI
 
         Alert alert = switchTo().alert();
         String alertText = alert.getText();
@@ -278,7 +278,7 @@ public class TransferTest {
         $(Selectors.byText("🚀 Send Transfer")).click();
 
 
-        // ШАГ 7: проверка, что усть аллерт на UI
+        // ШАГ 7: проверка, что есть аллерт на UI
 
         Alert alert = switchTo().alert();
         String alertText = alert.getText();

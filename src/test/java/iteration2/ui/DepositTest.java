@@ -77,7 +77,7 @@ public class DepositTest {
         $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(deposit));
         $(Selectors.byText("💵 Deposit")).click();
 
-        // ШАГ 6: проверка, что усть аллерт на UI
+        // ШАГ 6: проверка, что есть аллерт на UI
 
         Alert alert = switchTo().alert();
         String alertText = alert.getText();
