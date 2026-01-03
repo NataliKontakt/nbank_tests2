@@ -1,6 +1,5 @@
 package iteration2.ui;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
@@ -24,7 +23,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static com.codeborne.selenide.CollectionCondition.size;
-import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,7 +74,7 @@ public class DepositTest {
         $(Selectors.byText("💰 Deposit Money")).click();
         $((".account-selector")).click();
         $(Selectors.byText(accountNumber)).click();
-        $(Selectors.byAttribute("placeholder","Enter amount")).sendKeys(String.valueOf(deposit));
+        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(deposit));
         $(Selectors.byText("💵 Deposit")).click();
 
         // ШАГ 6: проверка, что усть аллерт на UI
@@ -106,7 +106,7 @@ public class DepositTest {
                 .extract().as(CreateAccountResponse[].class);
 
         CreateAccountResponse accountResponse = Arrays.stream(existingUserAccounts).filter(
-                accounts -> accounts.getAccountNumber().equals(accountNumber))
+                        accounts -> accounts.getAccountNumber().equals(accountNumber))
                 .findFirst()
                 .orElseThrow(() -> new AccountNotFoundException("Счет не найден: " + accountNumber));
 
