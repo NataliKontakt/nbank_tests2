@@ -551,7 +551,6 @@ public class TransferTest {
         // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
         DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
         String expectedBalance1 = usdFormat.format(deposit1);
-        String expectedBalance2 = "0.00";
 
         $("select.account-selector")
                 .$$("option")                                   // все option внутри селекта
@@ -598,7 +597,6 @@ public class TransferTest {
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
         $(Selectors.byText("🔄 Make a Transfer")).click();
         $(".account-selector").click();
         $(Selectors.byText(accountNumber1)).click();
