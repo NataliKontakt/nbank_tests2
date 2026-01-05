@@ -1,26 +1,20 @@
 package iteration2.ui;
 
-import com.codeborne.selenide.Configuration;
+import api.generators.RandomData;
+import api.models.CreateAccountResponse;
+import api.models.CreateUserRequest;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
+import api.specs.RequestSpec;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
-import generators.RandomData;
-import models.CreateAccountResponse;
-import models.CreateUserRequest;
-import models.LoginRequest;
-import org.junit.jupiter.api.BeforeAll;
+import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpec;
-import specs.ResponseSpec;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Map;
 
 import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.text;
@@ -29,18 +23,7 @@ import static com.codeborne.selenide.Selenide.*;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DepositTest {
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.0.249:3000";
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1920x1080";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true, "enableLog", true)
-        );
-    }
+public class DepositTest extends BaseUiTest {
 
     @Test
     public void userCanDepositAccountTest() throws AccountNotFoundException {
@@ -54,17 +37,7 @@ public class DepositTest {
         CreateAccountResponse account = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber = account.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -126,17 +99,7 @@ public class DepositTest {
         CreateAccountResponse account = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber = account.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -193,17 +156,7 @@ public class DepositTest {
         CreateAccountResponse account = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber = account.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -260,17 +213,7 @@ public class DepositTest {
         CreateAccountResponse account = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber = account.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 

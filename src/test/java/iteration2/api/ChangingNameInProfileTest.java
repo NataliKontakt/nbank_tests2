@@ -1,26 +1,26 @@
 package iteration2.api;
 
-import generators.RandomModelGenerator;
+import api.generators.RandomModelGenerator;
 import iteration1.api.BaseTest;
-import models.CreateUserRequest;
-import models.CustomerProfileResponse;
-import models.UpdateProfileRequest;
-import models.UpdateProfileResponse;
-import models.comparison.ModelAssertions;
+import api.models.CreateUserRequest;
+import api.models.CustomerProfileResponse;
+import api.models.UpdateProfileRequest;
+import api.models.UpdateProfileResponse;
+import api.models.comparison.ModelAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.skelethon.requesters.ValidatedCrudRequester;
-import requests.steps.AdminSteps;
-import specs.RequestSpec;
-import specs.ResponseSpec;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.skelethon.requesters.ValidatedCrudRequester;
+import api.requests.steps.AdminSteps;
+import api.specs.RequestSpec;
+import api.specs.ResponseSpec;
 
 import java.util.stream.Stream;
 
-import static specs.ResponseSpec.errorNameMustContainTwoWords;
+import static api.specs.ResponseSpec.errorNameMustContainTwoWords;
 
 
 public class ChangingNameInProfileTest extends BaseTest {

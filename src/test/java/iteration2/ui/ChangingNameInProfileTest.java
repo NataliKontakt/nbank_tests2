@@ -1,43 +1,29 @@
 package iteration2.ui;
 
+import api.generators.RandomData;
+import api.generators.RandomModelGenerator;
+import api.models.CreateUserRequest;
+import api.models.CustomerProfileResponse;
+import api.models.UpdateProfileRequest;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.skelethon.requesters.ValidatedCrudRequester;
+import api.requests.steps.AdminSteps;
+import api.specs.RequestSpec;
+import api.specs.ResponseSpec;
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
-import generators.RandomData;
-import generators.RandomModelGenerator;
-import models.CreateUserRequest;
-import models.CustomerProfileResponse;
-import models.LoginRequest;
-import models.UpdateProfileRequest;
-import org.junit.jupiter.api.BeforeAll;
+import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.skelethon.requesters.ValidatedCrudRequester;
-import requests.steps.AdminSteps;
-import specs.RequestSpec;
-import specs.ResponseSpec;
 
 import java.time.Duration;
-import java.util.Map;
 
 import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChangingNameInProfileTest {
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.0.249:3000";
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1920x1080";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true, "enableLog", true)
-        );
-    }
+public class ChangingNameInProfileTest extends BaseUiTest {
 
     @Test
     public void userCanChangeNameInProfileTest() throws InterruptedException {
@@ -46,18 +32,7 @@ public class ChangingNameInProfileTest {
         // ШАГ 2: админ создает юзера
         // ШАГ 3: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
+        authAsUser(user);
         Selenide.open("/dashboard");
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя
@@ -98,13 +73,9 @@ public class ChangingNameInProfileTest {
         // ШАГ 2: админ создает юзера
         // ШАГ 3: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
+
+        authAsUser(user);
+
         String name = RandomData.getName();
         UpdateProfileRequest updateProfileRequest = RandomModelGenerator.generate(UpdateProfileRequest.class);
         updateProfileRequest.setName(name);
@@ -113,10 +84,6 @@ public class ChangingNameInProfileTest {
                 Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsOk())
                 .update(updateProfileRequest);
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
 
         Selenide.open("/dashboard");
         // ШАГИ ТЕСТА
@@ -158,18 +125,7 @@ public class ChangingNameInProfileTest {
         // ШАГ 2: админ создает юзера
         // ШАГ 3: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
+        authAsUser(user);
         Selenide.open("/dashboard");
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя
@@ -210,18 +166,7 @@ public class ChangingNameInProfileTest {
         // ШАГ 2: админ создает юзера
         // ШАГ 3: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
+        authAsUser(user);
         Selenide.open("/dashboard");
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя

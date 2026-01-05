@@ -1,45 +1,28 @@
 package iteration2.ui;
 
-import com.codeborne.selenide.Configuration;
+import api.generators.RandomData;
+import api.models.CreateAccountResponse;
+import api.models.CreateUserRequest;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
-import generators.RandomData;
-import models.CreateAccountResponse;
-import models.CreateUserRequest;
-import models.LoginRequest;
-import org.junit.jupiter.api.BeforeAll;
+import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpec;
-import specs.ResponseSpec;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Map;
 
 import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.switchTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TransferTest {
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.0.249:3000";
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1920x1080";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true, "enableLog", true)
-        );
-    }
+public class TransferTest extends BaseUiTest {
 
     @Test
     public void userCanMakeTransferToYourOwnAccountTest() {
@@ -59,17 +42,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -148,17 +121,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user2.getUsername(), user2.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user1.getUsername()).password(user1.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user1);
 
         Selenide.open("/dashboard");
 
@@ -210,17 +173,7 @@ public class TransferTest {
                 .shouldHave(text(expectedBalance1));
 
         //второго пользователя
-        String userAuthHeader2 = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user2.getUsername()).password(user2.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader2);
+        authAsUser(user2);
 
         Selenide.open("/deposit");
         $("select.account-selector")
@@ -251,17 +204,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -339,17 +282,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -423,17 +356,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -506,17 +429,7 @@ public class TransferTest {
 
         String accountNotExist = "ACC100500";
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -581,17 +494,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -664,17 +567,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -748,17 +641,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -832,17 +715,7 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         Selenide.open("/dashboard");
 
@@ -897,7 +770,5 @@ public class TransferTest {
                 .shouldHave(text(accountNumber2))
                 .shouldHave(text(expectedBalance2));
     }
-
-
 
 }

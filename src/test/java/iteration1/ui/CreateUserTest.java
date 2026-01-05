@@ -1,15 +1,17 @@
 package iteration1.ui;
 
 import com.codeborne.selenide.*;
-import generators.RandomModelGenerator;
-import models.CreateUserRequest;
-import models.CreateUserResponse;
-import models.comparison.ModelAssertions;
+import api.generators.RandomModelGenerator;
+import api.models.CreateUserRequest;
+import api.models.CreateUserResponse;
+import api.models.comparison.ModelAssertions;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
-import specs.RequestSpec;
+import api.specs.RequestSpec;
+import ui.pages.AdminPanel;
+import ui.pages.LoginPage;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -20,28 +22,14 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CreateUserTest {
+public class CreateUserTest extends BaseUiTest{
 
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.0.249:3000";
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1920x1080";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true, "enableLog", true)
-        );
-    }
     @Test
     public void adminCanCreateUserTest(){
         // ШАГ 1: админ залогинился в банке
-        CreateUserRequest admin = CreateUserRequest.builder().username("admin").password("admin").build();
-        Selenide.open("/login");
-        $(Selectors.byAttribute("placeholder","Username")).sendKeys("admin");
-        $(Selectors.byAttribute("placeholder","Password")).sendKeys("admin");
-        $("button").click();
-        $(Selectors.byText("Admin Panel")).should(Condition.visible);
+        CreateUserRequest admin = CreateUserRequest.getAdmin();
+        authAsUser(admin);
+
         // ШАГ 2: админ создает юзера в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
