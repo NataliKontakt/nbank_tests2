@@ -1,21 +1,18 @@
 package iteration1.ui;
 
-import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.models.LoginRequest;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import com.codeborne.selenide.Selectors;
+import com.codeborne.selenide.Selenide;
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Alert;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
