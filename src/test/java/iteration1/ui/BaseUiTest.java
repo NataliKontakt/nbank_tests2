@@ -26,14 +26,15 @@ public class BaseUiTest extends BaseTest {
         );
     }
 
-    public void authAsUser(String username, String password){
+    public void authAsUser(String username, String password) {
         Selenide.open("/");
         String userAuthHeader = RequestSpec.getUserAuthHeader(username, password);
         executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
     }
 
-    public void authAsUser(CreateUserRequest createUserRequest){
+    public void authAsUser(CreateUserRequest createUserRequest) {
         authAsUser(createUserRequest.getUsername(), createUserRequest.getPassword());
     }
+
 
 }

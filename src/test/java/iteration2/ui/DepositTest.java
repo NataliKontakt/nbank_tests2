@@ -6,11 +6,13 @@ import api.models.CreateUserRequest;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import api.specs.RequestSpec;
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
+import ui.pages.*;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.time.Duration;
@@ -39,17 +41,15 @@ public class DepositTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToDeposit();
 
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         float deposit = RandomData.getDeposit();
-        $(Selectors.byText("💰 Deposit Money")).click();
-        $((".account-selector")).click();
-        $(Selectors.byText(accountNumber)).click();
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(deposit));
-        $(Selectors.byText("💵 Deposit")).click();
+        new DepositPage().deposit(accountNumber, deposit).checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY, deposit, accountNumber);
 
+/*
         // ШАГ 6: проверка, что есть аллерт на UI
 
         Alert alert = switchTo().alert();
@@ -63,6 +63,7 @@ public class DepositTest extends BaseUiTest {
         assertThat(alertText).contains(expectedMessage);
 
         alert.accept();
+*/
 
         // ШАГ 7: проверка, что аккаунт пополнен на UI
         $(Selectors.byText("🔄 Make a Transfer")).click();
@@ -101,7 +102,8 @@ public class DepositTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToDeposit();
 
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
@@ -215,16 +217,18 @@ public class DepositTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToDeposit();
 
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         float deposit = RandomData.getDeposit() - 5000;
-        $(Selectors.byText("💰 Deposit Money")).click();
+        new DepositPage().deposit(accountNumber, deposit);
+       /* $(Selectors.byText("💰 Deposit Money")).click();
         $((".account-selector")).click();
         $(Selectors.byText(accountNumber)).click();
         $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(deposit));
-        $(Selectors.byText("💵 Deposit")).click();
+        $(Selectors.byText("💵 Deposit")).click();*/
 
         // ШАГ 6: проверка, что ошибка ❌ Please enter a valid amount.
 

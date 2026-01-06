@@ -1,5 +1,9 @@
 package iteration1.ui;
 
+import api.models.LoginRequest;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
+import api.specs.ResponseSpec;
 import com.codeborne.selenide.*;
 import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
@@ -11,13 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
 import api.specs.RequestSpec;
 import ui.pages.AdminPanel;
+import ui.pages.BankAlert;
 import ui.pages.LoginPage;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.switchTo;
+import static com.codeborne.selenide.Selenide.*;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,20 +33,32 @@ public class CreateUserTest extends BaseUiTest{
         // ШАГ 1: админ залогинился в банке
         CreateUserRequest admin = CreateUserRequest.getAdmin();
         authAsUser(admin);
+ //       Selenide.open("/dashboard");
+/*        String userAuthHeader = new CrudRequester(
+                RequestSpec.unauthSpec(),
+                Endpoint.LOGIN,
+                ResponseSpec.requestReturnsOk())
+                .post(LoginRequest.builder().username(admin.getUsername()).password(admin.getPassword()).build())
+                .extract()
+                .header("Authorization");
 
+        Selenide.open("/login");
+
+        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(admin.getUsername());
+        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(admin.getPassword());
+        $("button").click();*/
+
+       /* $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
+
+        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
+*/
         // ШАГ 2: админ создает юзера в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
-        $(Selectors.byAttribute("placeholder","Username")).sendKeys(newUser.getUsername());
-        $(Selectors.byAttribute("placeholder","Password")).sendKeys(newUser.getPassword());
-        // ШАГ 3: проверка, что алерт "✅ User created successfully!"
-        $(Selectors.byText("Add User")).click();
+        new AdminPanel().open().createUser(newUser.getUsername(),newUser.getPassword())
+                .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY);
 
-
-        Alert alert = switchTo().alert();
-
-        assertEquals(alert.getText(), "✅ User created successfully!");
-        alert.accept();
         // ШАГ 4: проверка, что юзер отображается на UI
         ElementsCollection allUsersFromDashboard = $(Selectors.byText("All Users")).parent().findAll("li");
         allUsersFromDashboard.findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
