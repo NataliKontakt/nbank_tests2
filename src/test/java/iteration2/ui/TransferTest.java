@@ -9,7 +9,10 @@ import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
+import ui.pages.BankAlert;
+import ui.pages.LoginPage;
+import ui.pages.TransferPage;
+import ui.pages.UserDashboard;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -19,8 +22,6 @@ import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.switchTo;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransferTest extends BaseUiTest {
 
@@ -36,6 +37,7 @@ public class TransferTest extends BaseUiTest {
         CreateUserRequest user = AdminSteps.createUser();
         CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber1 = account1.getAccountNumber();
+
         float deposit1 = RandomData.getDeposit();
         UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
 
@@ -44,34 +46,23 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
+        // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
         float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
+        String recipientName = RandomData.getName();
 
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
 
-        // ШАГ 7: проверка, что есть аллерт на UI
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = String.format(
-                "✅ Successfully transferred $%s to account %s!",
-                transfer,
-                accountNumber2
-        );
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -123,34 +114,20 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user1);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user1.getUsername(), user1.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
+        // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
         float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
 
-
-        // ШАГ 7: проверка, что есть аллерт на UI
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = String.format(
-                "✅ Successfully transferred $%s to account %s!",
-                transfer,
-                accountNumber2
-        );
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         // первого пользователя
@@ -206,34 +183,20 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer, не заполняет имя и делает перевод
+        // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
         float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
 
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
-        // ШАГ 7: проверка, что есть аллерт на UI
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = String.format(
-                "✅ Successfully transferred $%s to account %s!",
-                transfer,
-                accountNumber2
-        );
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -284,30 +247,22 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
+        float transfer = deposit1 - 1;
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        String recipientName = RandomData.getName();
 
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -358,30 +313,21 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
+        float transfer = deposit1 - 1;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -431,30 +377,22 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNotExist);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ No user found with this account number.
+        float transfer = deposit1 - 1;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "❌ No user found with this account number.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNotExist)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.NO_USER_FOUND_WITH_THIS_ACCOUNT_NUMBER);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -496,29 +434,21 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        String recipientName = RandomData.getName();
 
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -569,30 +499,22 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 + 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Error: Invalid transfer: insufficient funds or invalid accounts
+        float transfer = deposit1 + 1;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "❌ Error: Invalid transfer: insufficient funds or invalid accounts";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.ERROR_INVALID_TRANSFER_INSUFFICIENT_FUNDS_OR_INVALID_ACCOUNTS);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -643,30 +565,21 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         float transfer = 10001;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
+        String recipientName = RandomData.getName();
 
-
-        // ШАГ 7: проверка, что есть аллерт на UI ❌ Error: Transfer amount cannot exceed 10000
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "❌ Error: Transfer amount cannot exceed 10000";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -717,30 +630,23 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToTransfer();
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
+        float transfer = deposit1 - 1;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new TransferPage().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .withConfirmCheck(false)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
 
         // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
         $(Selectors.byText("🏠 Home")).click();

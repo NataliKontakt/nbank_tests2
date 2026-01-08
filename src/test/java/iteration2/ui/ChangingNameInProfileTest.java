@@ -17,6 +17,10 @@ import com.codeborne.selenide.Selenide;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
+import ui.pages.BankAlert;
+import ui.pages.EditProfilePage;
+import ui.pages.LoginPage;
+import ui.pages.UserDashboard;
 
 import java.time.Duration;
 
@@ -33,22 +37,15 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГ 3: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
         authAsUser(user);
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToEditProfile();
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя
+        // ШАГ 5: проверка, что есть аллерт на UI ✅ Name updated successfully!
         String name = RandomData.getName();
-        $(".user-name").click();
-        Thread.sleep(300);
-        $(Selectors.byAttribute("placeholder", "Enter new name")).sendKeys(name);
-        $(Selectors.byText("💾 Save Changes")).click();
-        // ШАГ 5: проверка, что есть аллерт на UI
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
 
-        String expectedMessage = "✅ Name updated successfully!";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new EditProfilePage().changeName(name)
+                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY);
 
         // ШАГ 6: проверка, что имя изменилось на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -85,22 +82,14 @@ public class ChangingNameInProfileTest extends BaseUiTest {
                 ResponseSpec.requestReturnsOk())
                 .update(updateProfileRequest);
 
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToEditProfile();
         // ШАГИ ТЕСТА
-        // ШАГ 4: юзер изменяет свое имя
+        // ШАГ 4: юзер изменяет свое имя на такое же
+        // ШАГ 5: проверка, что есть аллерт на UI ⚠️ New name is the same as the current one.
 
-        $(".user-name").click();
-        Thread.sleep(300);
-        $(Selectors.byAttribute("placeholder", "Enter new name")).val(name);
-        $(Selectors.byText("💾 Save Changes")).click();
-        // ШАГ 5: проверка, что есть аллерт на UI
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "⚠️ New name is the same as the current one.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        new EditProfilePage().changeName(name)
+                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE);
 
         // ШАГ 6: проверка, что имя изменилось на UI
         $(Selectors.byText("🏠 Home")).click();
@@ -126,21 +115,14 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГ 3: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
         authAsUser(user);
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToEditProfile();
+
         // ШАГИ ТЕСТА
-        // ШАГ 4: юзер изменяет свое имя
-        $(".user-name").click();
-        Thread.sleep(300);
-        $(Selectors.byAttribute("placeholder", "Enter new name")).clear();
-        $(Selectors.byText("💾 Save Changes")).click();
-        // ШАГ 5: проверка, что есть аллерт на UI
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "❌ Please enter a valid name.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
+        // ШАГ 4: юзер изменяет свое имя - пустое поле
+        // ШАГ 5: проверка, что есть аллерт на UI ❌ Please enter a valid name.
+        new EditProfilePage().changeNameForEmptyName()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_NAME);
 
         // ШАГ 6: проверка, что имя изменилось на UI
         String noname = "noname";

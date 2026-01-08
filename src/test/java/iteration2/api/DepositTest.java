@@ -1,13 +1,11 @@
 package iteration2.api;
 
 import api.generators.RandomModelGenerator;
-import iteration1.api.BaseTest;
 import api.models.CreateUserRequest;
 import api.models.CustomerAccountsResponse;
 import api.models.DepositRequest;
 import api.models.DepositResponse;
 import api.models.comparison.ModelAssertions;
-import org.junit.jupiter.api.*;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
@@ -15,6 +13,8 @@ import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import iteration1.api.BaseTest;
+import org.junit.jupiter.api.*;
 
 import static api.specs.ResponseSpec.errorDepositCannotExceed_5000;
 import static api.specs.ResponseSpec.errorDepositLessZero;

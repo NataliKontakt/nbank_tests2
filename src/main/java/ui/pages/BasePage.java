@@ -5,7 +5,6 @@ import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.Alert;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 import static com.codeborne.selenide.Selenide.$;
@@ -15,7 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public abstract class BasePage<T extends BasePage> {
     protected SelenideElement usernameInput = $(Selectors.byAttribute("placeholder","Username"));
     protected SelenideElement passwordInput = $(Selectors.byAttribute("placeholder","Password"));
-
+    protected SelenideElement selectAccount = $((".account-selector"));
+    protected SelenideElement enterAmountInput = $(Selectors.byAttribute("placeholder", "Enter amount"));
     public abstract String url();
 
     public T open() {
