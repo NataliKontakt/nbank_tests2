@@ -42,17 +42,14 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя
         // ШАГ 5: проверка, что есть аллерт на UI ✅ Name updated successfully!
+        // ШАГ 6: проверка, что имя изменилось на UI
         String name = RandomData.getName();
 
         new EditProfilePage().changeName(name)
-                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY);
+                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY)
+                .switchToUserDashboard()
+                .checkChangeNameUi(name);
 
-        // ШАГ 6: проверка, что имя изменилось на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byClassName("welcome-text")).should(Condition.visible, Duration.ofSeconds(10)).shouldHave(Condition.text(
-                String.format("Welcome, %s!", name)));
-        refresh();
-        $(".user-name").should(Condition.visible).shouldHave(Condition.text(name));
         // ШАГ 7: проверка, что имя изменилось на API
         CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(user.getUsername(), user.getPassword()),
@@ -87,16 +84,13 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя на такое же
         // ШАГ 5: проверка, что есть аллерт на UI ⚠️ New name is the same as the current one.
+        // ШАГ 6: проверка, что имя не изменилось на UI
 
         new EditProfilePage().changeName(name)
-                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE);
+                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE)
+                .switchToUserDashboard()
+                .checkChangeNameUi(name);
 
-        // ШАГ 6: проверка, что имя изменилось на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byClassName("welcome-text")).should(Condition.visible, Duration.ofSeconds(10)).shouldHave(Condition.text(
-                String.format("Welcome, %s!", name)));
-        refresh();
-        $(".user-name").should(Condition.visible).shouldHave(Condition.text(name));
         // ШАГ 7: проверка, что имя изменилось на API
         CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(user.getUsername(), user.getPassword()),
@@ -121,16 +115,13 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя - пустое поле
         // ШАГ 5: проверка, что есть аллерт на UI ❌ Please enter a valid name.
-        new EditProfilePage().changeNameForEmptyName()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_NAME);
+        // ШАГ 6: проверка, что имя не изменилось на UI
 
-        // ШАГ 6: проверка, что имя изменилось на UI
-        String noname = "noname";
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byClassName("welcome-text")).should(Condition.visible, Duration.ofSeconds(10)).shouldHave(Condition.text(
-                String.format("Welcome, %s!", noname)));
-        refresh();
-        $(".user-name").should(Condition.visible).shouldHave(Condition.text(noname));
+        new EditProfilePage().changeNameForEmptyName()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_NAME)
+                .switchToUserDashboard()
+                .checkNotChangeNameUi();
+
         // ШАГ 7: проверка, что имя изменилось на API
         CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(user.getUsername(), user.getPassword()),
@@ -149,29 +140,19 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГ 3: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
         authAsUser(user);
-        Selenide.open("/dashboard");
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).switchToEditProfile();
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер изменяет свое имя
+        // ШАГ 5: проверка, что есть аллерт на UI "Name must contain two words with letters only"
+        // ШАГ 6: проверка, что имя не изменилось на UI
+
         String invalidName = RandomData.getName() + 1;
-        $(".user-name").click();
-        Thread.sleep(300);
-        $(Selectors.byAttribute("placeholder", "Enter new name")).val(invalidName);
-        $(Selectors.byText("💾 Save Changes")).click();
-        // ШАГ 5: проверка, что есть аллерт на UI
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        new EditProfilePage().changeName(invalidName)
+                .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS_ONLY)
+                .switchToUserDashboard()
+                .checkNotChangeNameUi();
 
-        String expectedMessage = "Name must contain two words with letters only";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 6: проверка, что имя изменилось на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byClassName("welcome-text")).should(Condition.visible, Duration.ofSeconds(10)).shouldHave(Condition.text(
-                "Welcome, noname!"));
-        refresh();
-        $(".user-name").should(Condition.visible).shouldHave(Condition.text("noname"));
         // ШАГ 7: проверка, что имя изменилось на API
         CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(user.getUsername(), user.getPassword()),

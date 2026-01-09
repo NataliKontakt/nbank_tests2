@@ -12,6 +12,7 @@ public class EditProfilePage extends BasePage<EditProfilePage>{
     private SelenideElement enterNewNameInput = $(Selectors.byAttribute("placeholder", "Enter new name"));
     private SelenideElement saveChangesButton =  $(Selectors.byText("💾 Save Changes"));
 
+
     @Override
     public String url() {
         return "/edit-profile";
@@ -30,4 +31,9 @@ public class EditProfilePage extends BasePage<EditProfilePage>{
     public EditProfilePage changeNameForEmptyName() throws InterruptedException {
         return changeName(null);
     }
+
+
+
+
+
 }

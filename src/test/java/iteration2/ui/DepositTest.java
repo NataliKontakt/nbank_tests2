@@ -6,7 +6,6 @@ import api.models.CreateUserRequest;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import api.specs.RequestSpec;
-import com.codeborne.selenide.Selectors;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
@@ -15,19 +14,15 @@ import ui.pages.LoginPage;
 import ui.pages.UserDashboard;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.time.Duration;
 import java.util.Arrays;
 
-import static com.codeborne.selenide.CollectionCondition.size;
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DepositTest extends BaseUiTest {
-
+    float zeroBalance = 0;
     @Test
     public void userCanDepositAccountTest() throws AccountNotFoundException {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
@@ -48,17 +43,12 @@ public class DepositTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что есть аллерт на UI
-        float deposit = RandomData.getDeposit();
-        new DepositPage().deposit(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY, deposit, accountNumber);
-
-
         // ШАГ 7: проверка, что аккаунт пополнен на UI
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(Selectors.byText("🔁 Transfer Again")).click();
-        $("li.list-group-item.d-flex.justify-content-between span")
-                .shouldBe(visible)
-                .shouldHave(text("$" + deposit), Duration.ofSeconds(15));
+        float deposit = RandomData.getDeposit();
+        new DepositPage().depositSuccess(accountNumber, deposit)
+                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY, deposit, accountNumber)
+                .switchToTransfer()
+                .checkingAccountBalanceUi(deposit);
 
         // ШАГ 8: проверка, что аккаунт был пополнен на API
         CreateAccountResponse[] existingUserAccounts = given()
@@ -96,9 +86,13 @@ public class DepositTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что ошибка ❌ Please select an account.
+        // ШАГ 7: проверка, что аккаунт не был пополнен на UI
         float deposit = RandomData.getDeposit();
         new DepositPage().depositWithoutSelectingAccount(deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_SELECT_AN_ACCOUNT);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_SELECT_AN_ACCOUNT)
+                .switchToUserDashboard()
+                .switchToDeposit()
+                .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
         // ШАГ 7: проверка, что баланс аккаунта равен нулю на API
         CreateAccountResponse[] existingUserAccounts = given()
@@ -134,16 +128,13 @@ public class DepositTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что ошибка ❌ Please deposit less or equal to 5000$.
-        float deposit = RandomData.getDeposit() + 5000;
-        new DepositPage().deposit(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000);
-
         // ШАГ 7: проверка, что аккаунт не был пополнен на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(Selectors.byText("🔁 Transfer Again")).click();
-        $$("li.list-group-item.d-flex.justify-content-between")
-                .shouldHave(size(0));
+        float deposit = RandomData.getDeposit() + 5000;
+        new DepositPage().depositUnSuccess(accountNumber, deposit)
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000)
+                .switchToUserDashboard()
+                .switchToDeposit()
+                .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
         // ШАГ 7: проверка, что баланс аккаунта равен нулю на API
         CreateAccountResponse[] existingUserAccounts = given()
@@ -180,16 +171,13 @@ public class DepositTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что ошибка ❌ Please enter a valid amount.
-        float deposit = RandomData.getDeposit() - 5000;
-        new DepositPage().deposit(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_AMOUNT);
-
         // ШАГ 7: проверка, что аккаунт не был пополнен на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(Selectors.byText("🔁 Transfer Again")).click();
-        $$("li.list-group-item.d-flex.justify-content-between")
-                .shouldHave(size(0));
+        float deposit = RandomData.getDeposit() - 5000;
+        new DepositPage().depositUnSuccess(accountNumber, deposit)
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_AMOUNT)
+                .switchToUserDashboard()
+                .switchToDeposit()
+                .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
         // ШАГ 7: проверка, что баланс аккаунта равен нулю на API
         CreateAccountResponse[] existingUserAccounts = given()

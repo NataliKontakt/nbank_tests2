@@ -7,8 +7,7 @@ import org.openqa.selenium.Alert;
 
 import java.util.Locale;
 
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.switchTo;
+import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class BasePage<T extends BasePage> {
@@ -16,6 +15,7 @@ public abstract class BasePage<T extends BasePage> {
     protected SelenideElement passwordInput = $(Selectors.byAttribute("placeholder","Password"));
     protected SelenideElement selectAccount = $((".account-selector"));
     protected SelenideElement enterAmountInput = $(Selectors.byAttribute("placeholder", "Enter amount"));
+    private SelenideElement homeButton =  $(Selectors.byText("🏠 Home"));
     public abstract String url();
 
     public T open() {
@@ -25,15 +25,6 @@ public abstract class BasePage<T extends BasePage> {
     public <T extends BasePage> T getPage(Class<T> pageClass) {
         return Selenide.page(pageClass);
     }
-
-/*    public T checkAlertMessageAndAccept(BankAlert bankAlert){
-        Alert alert = switchTo().alert();
-
-        assertThat(alert.getText().contains(bankAlert.getMessage()));
-        alert.accept();
-
-        return (T) this;
-    }*/
 
     public T checkAlertMessageAndAccept(BankAlert bankAlert, Object... params) {
         Alert alert = switchTo().alert();
@@ -49,4 +40,9 @@ public abstract class BasePage<T extends BasePage> {
 
         return (T) this;
     }
+    public UserDashboard switchToUserDashboard() {
+        homeButton.click();
+        return page(UserDashboard.class);
+    }
+
 }

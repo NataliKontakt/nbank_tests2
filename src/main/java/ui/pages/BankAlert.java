@@ -16,7 +16,8 @@ public enum BankAlert {
     ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000("❌ Error: Transfer amount cannot exceed 10000"),
     NAME_UPDATED_SUCCESSFULLY("✅ Name updated successfully!"),
     NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE("⚠️ New name is the same as the current one."),
-    PLEASE_ENTER_A_VALID_NAME("❌ Please enter a valid name.");
+    PLEASE_ENTER_A_VALID_NAME("❌ Please enter a valid name."),
+    NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS_ONLY("Name must contain two words with letters only");
     private final String message;
 
     BankAlert(String message) {

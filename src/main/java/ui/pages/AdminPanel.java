@@ -1,5 +1,6 @@
 package ui.pages;
 
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
 import lombok.Getter;
@@ -22,10 +23,7 @@ public class AdminPanel extends BasePage<AdminPanel>{
         return  this;
     }
 
-    /*
-    * $(Selectors.byAttribute("placeholder","Username")).sendKeys(newUser.getUsername());
-        $(Selectors.byAttribute("placeholder","Password")).sendKeys(newUser.getPassword());
-        // ШАГ 3: проверка, что алерт "✅ User created successfully!"
-        $(Selectors.byText("Add User")).click();
-    * */
+    public ElementsCollection getAllUsers(){
+        return $(Selectors.byText("All Users")).parent().findAll("li");
+    }
 }

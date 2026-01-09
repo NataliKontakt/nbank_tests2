@@ -3,6 +3,7 @@ package iteration1.ui;
 import api.models.LoginRequest;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.steps.AdminSteps;
 import api.specs.ResponseSpec;
 import com.codeborne.selenide.*;
 import api.generators.RandomModelGenerator;
@@ -33,6 +34,7 @@ public class CreateUserTest extends BaseUiTest{
         // ШАГ 1: админ залогинился в банке
         CreateUserRequest admin = CreateUserRequest.getAdmin();
         authAsUser(admin);
+
  //       Selenide.open("/dashboard");
 /*        String userAuthHeader = new CrudRequester(
                 RequestSpec.unauthSpec(),
@@ -54,23 +56,25 @@ public class CreateUserTest extends BaseUiTest{
         $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
 */
         // ШАГ 2: админ создает юзера в банке
+        // ШАГ 4: проверка, что юзер отображается на UI
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
         new AdminPanel().open().createUser(newUser.getUsername(),newUser.getPassword())
-                .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY);
+                .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY)
+                .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
 
-        // ШАГ 4: проверка, что юзер отображается на UI
-        ElementsCollection allUsersFromDashboard = $(Selectors.byText("All Users")).parent().findAll("li");
-        allUsersFromDashboard.findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
         // ШАГ 5: проверка, что юзер создан на API
-        CreateUserResponse[] users = given()
+
+
+       /* CreateUserResponse[] users = given()
                 .spec(RequestSpec.adminSpec())
                 .get("http://localhost:4111/api/v1/admin/users")
                 .then().assertThat()
                 .statusCode(HttpStatus.SC_OK)
                 .extract().as(CreateUserResponse[].class);
-
-        CreateUserResponse createdUser = Arrays.stream(users).filter(user -> user.getUsername().equals(newUser.getUsername()))
+*/
+        CreateUserResponse createdUser = AdminSteps.getAllUsers().stream()
+                .filter(user -> user.getUsername().equals(newUser.getUsername()))
                 .findFirst().get();
 
         ModelAssertions.assertThatModels(newUser, createdUser).match();

@@ -5,8 +5,9 @@ import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
 import lombok.Getter;
 
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.page;
+import java.time.Duration;
+
+import static com.codeborne.selenide.Selenide.*;
 
 @Getter
 public class UserDashboard extends BasePage<UserDashboard>{
@@ -14,6 +15,10 @@ public class UserDashboard extends BasePage<UserDashboard>{
     private SelenideElement depositMoneyButton = $(Selectors.byText("💰 Deposit Money"));
     private SelenideElement transferMoneyButton = $(Selectors.byText("🔄 Make a Transfer"));
     private SelenideElement userInfo = $(Selectors.byText("@")).shouldBe(Condition.visible);
+    private SelenideElement userNameText = $(Selectors.byClassName("user-name")).shouldBe(Condition.visible);
+    private SelenideElement userUserNameText = $(Selectors.byClassName("user-username")).shouldBe(Condition.visible);
+    private String noName = "Noname";
+
     @Override
     public String url() {
         return "/dashboard";
@@ -30,8 +35,20 @@ public class UserDashboard extends BasePage<UserDashboard>{
     }
 
     public EditProfilePage switchToEditProfile() {
-        userInfo.click();
+        userUserNameText.click();
         return page(EditProfilePage.class);
     }
 
+    public UserDashboard checkChangeNameUi(String name){
+        welcomeText.should(Condition.visible, Duration.ofSeconds(10)).shouldHave(Condition.text(
+                String.format("Welcome, %s!", name)));
+        refresh();
+        userNameText.should(Condition.visible).shouldHave(Condition.text(name));
+        return this;
+    }
+
+    public UserDashboard checkNotChangeNameUi(){
+        checkChangeNameUi(noName);
+        return this;
+    }
 }
