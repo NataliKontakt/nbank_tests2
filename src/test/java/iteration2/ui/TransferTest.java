@@ -1,24 +1,19 @@
 package iteration2.ui;
 
 import api.generators.RandomData;
+import api.models.Account;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
-import ui.pages.*;
+import ui.pages.BankAlert;
+import ui.pages.LoginPage;
+import ui.pages.TransferPage;
+import ui.pages.UserDashboard;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-
-import static com.codeborne.selenide.CollectionCondition.size;
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransferTest extends BaseUiTest {
     float zeroBalance = 0;
@@ -50,6 +45,7 @@ public class TransferTest extends BaseUiTest {
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         float transfer = deposit1 - 1;
         float expectedBalance1 = deposit1 - transfer;
         String recipientName = RandomData.getName();
@@ -63,15 +59,14 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  expectedBalance1)
+                .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
                 .checkingAccountBalanceUi(accountNumber2, transfer);
 
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
     }
 
     @Test
@@ -120,6 +115,12 @@ public class TransferTest extends BaseUiTest {
                 .getPage(UserDashboard.class).switchToDeposit()
                 .checkingAccountBalanceUi(accountNumber2, transfer);
 
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user1.getUsername(), user1.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user2.getUsername(), user2.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
+
     }
 
     @Test
@@ -160,9 +161,13 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  expectedBalance1)
+                .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
                 .checkingAccountBalanceUi(accountNumber2, transfer);
-
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
 
     }
 
@@ -205,9 +210,14 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  deposit1)
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -248,8 +258,14 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  deposit1)
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
+
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -290,7 +306,11 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.NO_USER_FOUND_WITH_THIS_ACCOUNT_NUMBER)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  deposit1);
+                .checkingAccountBalanceUi(accountNumber1, deposit1);
+
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
 
     }
 
@@ -332,9 +352,14 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  deposit1)
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -376,8 +401,14 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.ERROR_INVALID_TRANSFER_INSUFFICIENT_FUNDS_OR_INVALID_ACCOUNTS)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  deposit1)
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
+
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -419,8 +450,14 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  deposit1)
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
+
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -463,8 +500,14 @@ public class TransferTest extends BaseUiTest {
                 .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
                 .switchToUserDashboard()
                 .switchToDeposit()
-                .checkingAccountBalanceUi(accountNumber1,  deposit1)
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
+
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
 }

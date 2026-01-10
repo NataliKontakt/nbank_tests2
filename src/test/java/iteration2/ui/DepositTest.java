@@ -1,11 +1,11 @@
 package iteration2.ui;
 
 import api.generators.RandomData;
+import api.models.Account;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
-import api.specs.RequestSpec;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
@@ -13,18 +13,13 @@ import ui.pages.DepositPage;
 import ui.pages.LoginPage;
 import ui.pages.UserDashboard;
 
-import javax.security.auth.login.AccountNotFoundException;
-import java.util.Arrays;
-
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DepositTest extends BaseUiTest {
     float zeroBalance = 0;
+
     @Test
-    public void userCanDepositAccountTest() throws AccountNotFoundException {
+    public void userCanDepositAccountTest() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
         // ШАГ 1: админ логинится в банке
         // ШАГ 2: админ создает юзера
@@ -51,23 +46,14 @@ public class DepositTest extends BaseUiTest {
                 .checkingAccountBalanceUi(deposit);
 
         // ШАГ 8: проверка, что аккаунт был пополнен на API
-        CreateAccountResponse[] existingUserAccounts = given()
-                .spec(RequestSpec.authSpec(user.getUsername(), user.getPassword()))
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then().assertThat()
-                .extract().as(CreateAccountResponse[].class);
-
-        CreateAccountResponse accountResponse = Arrays.stream(existingUserAccounts).filter(
-                        accounts -> accounts.getAccountNumber().equals(accountNumber))
-                .findFirst()
-                .orElseThrow(() -> new AccountNotFoundException("Счет не найден: " + accountNumber));
+        Account accountResponse = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber);
 
         assertThat(accountResponse.getBalance()).isEqualTo(deposit);
 
     }
 
     @Test
-    public void userCanNotDepositAccountTestWithoutSelectingAccount() throws AccountNotFoundException {
+    public void userCanNotDepositAccountTestWithoutSelectingAccount() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
         // ШАГ 1: админ логинится в банке
         // ШАГ 2: админ создает юзера
@@ -95,22 +81,13 @@ public class DepositTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
         // ШАГ 7: проверка, что баланс аккаунта равен нулю на API
-        CreateAccountResponse[] existingUserAccounts = given()
-                .spec(RequestSpec.authSpec(user.getUsername(), user.getPassword()))
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then().assertThat()
-                .extract().as(CreateAccountResponse[].class);
-
-        CreateAccountResponse accountResponse = Arrays.stream(existingUserAccounts).filter(
-                        accounts -> accounts.getAccountNumber().equals(accountNumber))
-                .findFirst()
-                .orElseThrow(() -> new AccountNotFoundException("Счет не найден: " + accountNumber));
+        Account accountResponse = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber);
 
         assertThat(accountResponse.getBalance()).isZero();
     }
 
     @Test
-    public void userCanNotDepositAccountTestMore5000() throws AccountNotFoundException {
+    public void userCanNotDepositAccountTestMore5000() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
         // ШАГ 1: админ логинится в банке
         // ШАГ 2: админ создает юзера
@@ -136,23 +113,14 @@ public class DepositTest extends BaseUiTest {
                 .switchToDeposit()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
-        // ШАГ 7: проверка, что баланс аккаунта равен нулю на API
-        CreateAccountResponse[] existingUserAccounts = given()
-                .spec(RequestSpec.authSpec(user.getUsername(), user.getPassword()))
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then().assertThat()
-                .extract().as(CreateAccountResponse[].class);
-
-        CreateAccountResponse accountResponse = Arrays.stream(existingUserAccounts).filter(
-                        accounts -> accounts.getAccountNumber().equals(accountNumber))
-                .findFirst()
-                .orElseThrow(() -> new AccountNotFoundException("Счет не найден: " + accountNumber));
+        // ШАГ 8: проверка, что баланс аккаунта равен нулю на API
+        Account accountResponse = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber);
 
         assertThat(accountResponse.getBalance()).isZero();
     }
 
     @Test
-    public void userCanNotDepositAccountTestLessOneCent() throws AccountNotFoundException {
+    public void userCanNotDepositAccountTestLessOneCent() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
         // ШАГ 1: админ логинится в банке
         // ШАГ 2: админ создает юзера
@@ -179,17 +147,8 @@ public class DepositTest extends BaseUiTest {
                 .switchToDeposit()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
-        // ШАГ 7: проверка, что баланс аккаунта равен нулю на API
-        CreateAccountResponse[] existingUserAccounts = given()
-                .spec(RequestSpec.authSpec(user.getUsername(), user.getPassword()))
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then().assertThat()
-                .extract().as(CreateAccountResponse[].class);
-
-        CreateAccountResponse accountResponse = Arrays.stream(existingUserAccounts).filter(
-                        accounts -> accounts.getAccountNumber().equals(accountNumber))
-                .findFirst()
-                .orElseThrow(() -> new AccountNotFoundException("Счет не найден: " + accountNumber));
+        // ШАГ 8: проверка, что баланс аккаунта равен нулю на API
+        Account accountResponse = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber);
 
         assertThat(accountResponse.getBalance()).isZero();
     }

@@ -3,11 +3,12 @@ package api.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
+@Getter
 @NoArgsConstructor
 @Builder
 public class CustomerAccountsResponse extends BaseModel{

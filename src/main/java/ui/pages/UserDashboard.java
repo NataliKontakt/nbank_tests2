@@ -14,9 +14,10 @@ public class UserDashboard extends BasePage<UserDashboard>{
     private SelenideElement welcomeText = $(Selectors.byClassName("welcome-text"));
     private SelenideElement depositMoneyButton = $(Selectors.byText("💰 Deposit Money"));
     private SelenideElement transferMoneyButton = $(Selectors.byText("🔄 Make a Transfer"));
-    private SelenideElement userInfo = $(Selectors.byText("@")).shouldBe(Condition.visible);
-    private SelenideElement userNameText = $(Selectors.byClassName("user-name")).shouldBe(Condition.visible);
-    private SelenideElement userUserNameText = $(Selectors.byClassName("user-username")).shouldBe(Condition.visible);
+    private SelenideElement createNewAccountButton = $(Selectors.byText("➕ Create New Account"));
+    //private SelenideElement userInfo = $(Selectors.byText("@")).shouldBe(Condition.visible);
+    private final SelenideElement userNameText = $(Selectors.byClassName("user-name")).shouldBe(Condition.visible);
+    private final SelenideElement userUserNameText = $(Selectors.byClassName("user-username")).shouldBe(Condition.visible);
     private String noName = "Noname";
 
     @Override
@@ -24,6 +25,10 @@ public class UserDashboard extends BasePage<UserDashboard>{
         return "/dashboard";
     }
 
+    public UserDashboard createNewAccount(){
+        createNewAccountButton.click();
+        return  this;
+    }
     public DepositPage switchToDeposit(){
         depositMoneyButton.click();
         return page(DepositPage.class);

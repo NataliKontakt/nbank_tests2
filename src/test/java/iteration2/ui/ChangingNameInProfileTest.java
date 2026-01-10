@@ -11,20 +11,14 @@ import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
 import ui.pages.BankAlert;
 import ui.pages.EditProfilePage;
 import ui.pages.LoginPage;
 import ui.pages.UserDashboard;
 
-import java.time.Duration;
-
-import static com.codeborne.selenide.Selenide.*;
+import static api.requests.steps.UserSteps.getCustomerProfile;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangingNameInProfileTest extends BaseUiTest {
@@ -51,11 +45,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
                 .checkChangeNameUi(name);
 
         // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
-                RequestSpec.authSpec(user.getUsername(), user.getPassword()),
-                Endpoint.CUSTOMER_PROFILE_GET,
-                ResponseSpec.requestReturnsOk())
-                .get();
+        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
         assertThat(customerProfileResponse.getName()).isEqualTo(name);
 
     }
@@ -92,11 +82,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
                 .checkChangeNameUi(name);
 
         // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
-                RequestSpec.authSpec(user.getUsername(), user.getPassword()),
-                Endpoint.CUSTOMER_PROFILE_GET,
-                ResponseSpec.requestReturnsOk())
-                .get();
+        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
         assertThat(customerProfileResponse.getName()).isEqualTo(name);
 
     }
@@ -123,11 +109,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
                 .checkNotChangeNameUi();
 
         // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
-                RequestSpec.authSpec(user.getUsername(), user.getPassword()),
-                Endpoint.CUSTOMER_PROFILE_GET,
-                ResponseSpec.requestReturnsOk())
-                .get();
+        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
         assertThat(customerProfileResponse.getName()).isNull();
 
     }
@@ -154,11 +136,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
                 .checkNotChangeNameUi();
 
         // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
-                RequestSpec.authSpec(user.getUsername(), user.getPassword()),
-                Endpoint.CUSTOMER_PROFILE_GET,
-                ResponseSpec.requestReturnsOk())
-                .get();
+        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
         assertThat(customerProfileResponse.getName()).isNull();
 
     }
