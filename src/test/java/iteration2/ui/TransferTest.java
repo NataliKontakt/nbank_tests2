@@ -1,45 +1,21 @@
 package iteration2.ui;
 
-import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
-import generators.RandomData;
-import models.CreateAccountResponse;
-import models.CreateUserRequest;
-import models.LoginRequest;
-import org.junit.jupiter.api.BeforeAll;
+import api.generators.RandomData;
+import api.models.Account;
+import api.models.CreateAccountResponse;
+import api.models.CreateUserRequest;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
+import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpec;
-import specs.ResponseSpec;
+import ui.pages.BankAlert;
+import ui.pages.DepositPage;
+import ui.pages.TransferPage;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-import java.util.Map;
-
-import static com.codeborne.selenide.CollectionCondition.size;
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TransferTest {
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.0.249:3000";
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1920x1080";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true, "enableLog", true)
-        );
-    }
+public class TransferTest extends BaseUiTest {
+    float zeroBalance = 0;
 
     @Test
     public void userCanMakeTransferToYourOwnAccountTest() {
@@ -53,80 +29,40 @@ public class TransferTest {
         CreateUserRequest user = AdminSteps.createUser();
         CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber1 = account1.getAccountNumber();
+
         float deposit1 = RandomData.getDeposit();
         UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
 
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
+        // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
+
         float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
+        float expectedBalance1 = deposit1 - transfer;
+        String recipientName = RandomData.getName();
 
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
+                .checkingAccountBalanceUi(accountNumber2, transfer);
 
-        // ШАГ 7: проверка, что есть аллерт на UI
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = String.format(
-                "✅ Successfully transferred $%s to account %s!",
-                transfer,
-                accountNumber2
-        );
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1 - transfer);
-        String expectedBalance2 = usdFormat.format(transfer);
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
     }
 
     @Test
@@ -148,89 +84,35 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user2.getUsername(), user2.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user1.getUsername()).password(user1.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user1);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
+        // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
+
         float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
+        float expectedBalance1 = deposit1 - transfer;
 
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, expectedBalance1);
 
-        // ШАГ 7: проверка, что есть аллерт на UI
+        authAsUser(user2);
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber2, transfer);
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user1.getUsername(), user1.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user2.getUsername(), user2.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
 
-        String expectedMessage = String.format(
-                "✅ Successfully transferred $%s to account %s!",
-                transfer,
-                accountNumber2
-        );
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        // первого пользователя
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1 - transfer);
-        String expectedBalance2 = usdFormat.format(transfer);
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        //второго пользователя
-        String userAuthHeader2 = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user2.getUsername()).password(user2.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader2);
-
-        Selenide.open("/deposit");
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
     }
 
     @Test
@@ -251,74 +133,30 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer, не заполняет имя и делает перевод
+        // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
         float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
+        float expectedBalance1 = deposit1 - transfer;
 
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
+                .checkingAccountBalanceUi(accountNumber2, transfer);
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
 
-
-        // ШАГ 7: проверка, что есть аллерт на UI
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = String.format(
-                "✅ Successfully transferred $%s to account %s!",
-                transfer,
-                accountNumber2
-        );
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1 - transfer);
-        String expectedBalance2 = usdFormat.format(transfer);
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
     }
 
     @Test
@@ -339,70 +177,32 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        float transfer = deposit1 - 1;
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        String recipientName = RandomData.getName();
 
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
+        new TransferPage().open().transferBuilder()
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
+                .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1);
-        String expectedBalance2 = "0.00";
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -423,70 +223,31 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        float transfer = deposit1 - 1;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
+                .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1);
-        String expectedBalance2 = "0.00";
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -506,60 +267,29 @@ public class TransferTest {
 
         String accountNotExist = "ACC100500";
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
+        // ШАГ 7: проверка, что есть алерт на UI ❌ No user found with this account number.
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNotExist);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
+        String recipientName = RandomData.getName();
 
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNotExist)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.NO_USER_FOUND_WITH_THIS_ACCOUNT_NUMBER);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, deposit1);
 
-        // ШАГ 7: проверка, что есть аллерт на UI ❌ No user found with this account number.
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        String expectedMessage = "❌ No user found with this account number.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1);
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
 
     }
 
@@ -581,69 +311,31 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        String recipientName = RandomData.getName();
 
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
+                .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1);
-        String expectedBalance2 = "0.00";
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -664,70 +356,32 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 + 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Error: Invalid transfer: insufficient funds or invalid accounts
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        float transfer = deposit1 + 1;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.ERROR_INVALID_TRANSFER_INSUFFICIENT_FUNDS_OR_INVALID_ACCOUNTS);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
+                .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
-        String expectedMessage = "❌ Error: Invalid transfer: insufficient funds or invalid accounts";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1);
-        String expectedBalance2 = "0.00";
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -748,70 +402,32 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = 10001;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-        $("#confirmCheck").click();
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Error: Transfer amount cannot exceed 10000
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        float transfer = 10001;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
+                .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
-        String expectedMessage = "❌ Error: Transfer amount cannot exceed 10000";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1);
-        String expectedBalance2 = "0.00";
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
 
     @Test
@@ -832,72 +448,33 @@ public class TransferTest {
         CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber2 = account2.getAccountNumber();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(LoginRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
-        float transfer = deposit1 - 1;
-        $(Selectors.byText("🔄 Make a Transfer")).click();
-        $(".account-selector").click();
-        $(Selectors.byText(accountNumber1)).click();
-        $(Selectors.byAttribute("placeholder", "Enter recipient name")).sendKeys(RandomData.getName());
-        $(Selectors.byAttribute("placeholder", "Enter recipient account number")).sendKeys(accountNumber2);
-        $(Selectors.byAttribute("placeholder", "Enter amount")).sendKeys(String.valueOf(transfer));
-
-        $(Selectors.byText("🚀 Send Transfer")).click();
-
-
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        float transfer = deposit1 - 1;
+        String recipientName = RandomData.getName();
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
+        new TransferPage().open().transferBuilder()
+                .accountNumber(accountNumber1)
+                .recipientName(recipientName)
+                .accountRecipientNumber(accountNumber2)
+                .transfer(transfer)
+                .withConfirmCheck(false)
+                .execute()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
+                .checkingAccountBalanceUi(accountNumber1, deposit1)
+                .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
-        String expectedMessage = "❌ Please fill all fields and confirm.";
-        assertThat(alertText).contains(expectedMessage);
-
-        alert.accept();
-
-        // ШАГ 7: проверка, что балансы аккаунтов изменились на UI
-        $(Selectors.byText("🏠 Home")).click();
-        $(Selectors.byText("💰 Deposit Money")).click();
-
-// Проверка: ищем option, содержащий номер аккаунта, и проверяем баланс в нём
-        // Формируем строку баланса в американском формате: всегда с точкой и двумя знаками после неё
-        DecimalFormat usdFormat = new DecimalFormat("$#.00", DecimalFormatSymbols.getInstance(Locale.US));
-        String expectedBalance1 = usdFormat.format(deposit1);
-        String expectedBalance2 = "0.00";
-
-        $("select.account-selector")
-                .$$("option")                                   // все option внутри селекта
-                .filterBy(text(accountNumber1))        // оставляем только тот, где есть нужный аккаунт
-                .shouldHave(size(1))    // убеждаемся, что такой аккаунт найден (и только один)
-                .first()                                        // берём найденный option
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber1))
-                .shouldHave(text(expectedBalance1));
-
-        $("select.account-selector")
-                .$$("option")
-                .filterBy(text(accountNumber2))
-                .shouldHave(size(1))
-                .first()
-                .shouldBe(visible)
-                .shouldHave(text(accountNumber2))
-                .shouldHave(text(expectedBalance2));
+        // ШАГ 9: проверка, что аккаунт был пополнен на API
+        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
+        assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
-
-
 
 }

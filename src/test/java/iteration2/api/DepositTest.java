@@ -1,23 +1,23 @@
 package iteration2.api;
 
-import generators.RandomModelGenerator;
+import api.generators.RandomModelGenerator;
+import api.models.CreateUserRequest;
+import api.models.CustomerAccountsResponse;
+import api.models.DepositRequest;
+import api.models.DepositResponse;
+import api.models.comparison.ModelAssertions;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.skelethon.requesters.ValidatedCrudRequester;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
+import api.specs.RequestSpec;
+import api.specs.ResponseSpec;
 import iteration1.api.BaseTest;
-import models.CreateUserRequest;
-import models.CustomerAccountsResponse;
-import models.DepositRequest;
-import models.DepositResponse;
-import models.comparison.ModelAssertions;
 import org.junit.jupiter.api.*;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.skelethon.requesters.ValidatedCrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpec;
-import specs.ResponseSpec;
 
-import static specs.ResponseSpec.errorDepositCannotExceed_5000;
-import static specs.ResponseSpec.errorDepositLessZero;
+import static api.specs.ResponseSpec.errorDepositCannotExceed_5000;
+import static api.specs.ResponseSpec.errorDepositLessZero;
 
 public class DepositTest extends BaseTest {
     CreateUserRequest user1;

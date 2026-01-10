@@ -1,26 +1,26 @@
 package iteration2.api;
 
-import generators.MoneyMath;
-import generators.RandomData;
-import generators.RandomModelGenerator;
+import api.generators.MoneyMath;
+import api.generators.RandomData;
+import api.generators.RandomModelGenerator;
 import iteration1.api.BaseTest;
-import models.Account;
-import models.CreateUserRequest;
-import models.CustomerAccountsResponse;
-import models.TransferRequest;
+import api.models.Account;
+import api.models.CreateUserRequest;
+import api.models.CustomerAccountsResponse;
+import api.models.TransferRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpec;
-import specs.ResponseSpec;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
+import api.specs.RequestSpec;
+import api.specs.ResponseSpec;
 
 import java.util.List;
 
-import static specs.ResponseSpec.errorInvalidTransfer;
-import static specs.ResponseSpec.errorTranslationLessZero;
+import static api.specs.ResponseSpec.errorInvalidTransfer;
+import static api.specs.ResponseSpec.errorTranslationLessZero;
 
 public class TransferTest extends BaseTest {
     CreateUserRequest user1;
