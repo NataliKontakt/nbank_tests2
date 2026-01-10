@@ -78,7 +78,6 @@ public class DepositTest {
         $(Selectors.byText("💵 Deposit")).click();
 
         // ШАГ 6: проверка, что есть аллерт на UI
-
         Alert alert = switchTo().alert();
         String alertText = alert.getText();
 
