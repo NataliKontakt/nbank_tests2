@@ -9,9 +9,8 @@ import api.requests.steps.UserSteps;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
-import ui.pages.LoginPage;
+import ui.pages.DepositPage;
 import ui.pages.TransferPage;
-import ui.pages.UserDashboard;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,26 +38,23 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
-        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+
         float transfer = deposit1 - 1;
         float expectedBalance1 = deposit1 - transfer;
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
                 .checkingAccountBalanceUi(accountNumber2, transfer);
 
@@ -90,29 +86,25 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user1);
 
-        new LoginPage().open().login(user1.getUsername(), user1.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
-        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+
         float transfer = deposit1 - 1;
         float expectedBalance1 = deposit1 - transfer;
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1);
 
         authAsUser(user2);
-        new LoginPage().open().login(user2.getUsername(), user2.getPassword())
-                .getPage(UserDashboard.class).switchToDeposit()
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber2, transfer);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
@@ -143,24 +135,20 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer, не заполняет имя и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ✅ Successfully transferred $%s to account %s!
-        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         float transfer = deposit1 - 1;
         float expectedBalance1 = deposit1 - transfer;
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
                 .checkingAccountBalanceUi(accountNumber2, transfer);
         // ШАГ 9: проверка, что аккаунт был пополнен на API
@@ -191,9 +179,6 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
@@ -202,14 +187,14 @@ public class TransferTest extends BaseUiTest {
 
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
@@ -240,9 +225,6 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
@@ -250,14 +232,14 @@ public class TransferTest extends BaseUiTest {
         float transfer = deposit1 - 1;
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .recipientName(recipientName)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
@@ -287,9 +269,6 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть алерт на UI ❌ No user found with this account number.
@@ -297,15 +276,15 @@ public class TransferTest extends BaseUiTest {
         float transfer = deposit1 - 1;
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNotExist)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.NO_USER_FOUND_WITH_THIS_ACCOUNT_NUMBER)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.NO_USER_FOUND_WITH_THIS_ACCOUNT_NUMBER);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
@@ -334,9 +313,6 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
@@ -344,14 +320,14 @@ public class TransferTest extends BaseUiTest {
 
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNumber2)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
@@ -382,9 +358,6 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Error: Invalid transfer: insufficient funds or invalid accounts
@@ -392,15 +365,15 @@ public class TransferTest extends BaseUiTest {
         float transfer = deposit1 + 1;
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.ERROR_INVALID_TRANSFER_INSUFFICIENT_FUNDS_OR_INVALID_ACCOUNTS)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.ERROR_INVALID_TRANSFER_INSUFFICIENT_FUNDS_OR_INVALID_ACCOUNTS);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
@@ -431,9 +404,6 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Error: Transfer amount cannot exceed 10000
@@ -441,15 +411,15 @@ public class TransferTest extends BaseUiTest {
         float transfer = 10001;
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
@@ -480,9 +450,6 @@ public class TransferTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToTransfer();
-
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
         // ШАГ 7: проверка, что есть аллерт на UI ❌ Please fill all fields and confirm.
@@ -490,16 +457,16 @@ public class TransferTest extends BaseUiTest {
         float transfer = deposit1 - 1;
         String recipientName = RandomData.getName();
 
-        new TransferPage().transferBuilder()
+        new TransferPage().open().transferBuilder()
                 .accountNumber(accountNumber1)
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .withConfirmCheck(false)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM)
-                .switchToUserDashboard()
-                .switchToDeposit()
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+        // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 

@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum BankAlert {
     USER_CREATED_SUCCESSFULLY("✅ User created successfully!"),
     USERNAME_MUST_BE_BETWEEN_3_AND_15_HARACTERS("Username must be between 3 and 15 characters"),
-    NEW_ACCOUNT_CREATED("✅ New Account Created! Account Number:"),
+    NEW_ACCOUNT_CREATED("✅ New Account Created! Account Number: %s"),
     DEPOSIT_SUCCESSFULLY("✅ Successfully deposited $%.2f to account %s!"),
     PLEASE_SELECT_AN_ACCOUNT("❌ Please select an account."),
     PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000("❌ Please deposit less or equal to 5000$."),

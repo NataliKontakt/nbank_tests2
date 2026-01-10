@@ -8,10 +8,7 @@ import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
-import ui.pages.BankAlert;
-import ui.pages.DepositPage;
-import ui.pages.LoginPage;
-import ui.pages.UserDashboard;
+import ui.pages.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,18 +28,14 @@ public class DepositTest extends BaseUiTest {
         String accountNumber = account.getAccountNumber();
 
         authAsUser(user);
-
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToDeposit();
-
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что есть аллерт на UI
-        // ШАГ 7: проверка, что аккаунт пополнен на UI
         float deposit = RandomData.getDeposit();
-        new DepositPage().depositSuccess(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY, deposit, accountNumber)
-                .switchToTransfer()
+        new DepositPage().open().depositSuccess(accountNumber, deposit)
+                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY, deposit, accountNumber);
+        // ШАГ 7: проверка, что аккаунт пополнен на UI
+        new TransferPage().open()
                 .checkingAccountBalanceUi(deposit);
 
         // ШАГ 8: проверка, что аккаунт был пополнен на API
@@ -66,18 +59,14 @@ public class DepositTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToDeposit();
-
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что ошибка ❌ Please select an account.
-        // ШАГ 7: проверка, что аккаунт не был пополнен на UI
         float deposit = RandomData.getDeposit();
-        new DepositPage().depositWithoutSelectingAccount(deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_SELECT_AN_ACCOUNT)
-                .switchToUserDashboard()
-                .switchToDeposit()
+        new DepositPage().open().depositWithoutSelectingAccount(deposit)
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_SELECT_AN_ACCOUNT);
+        // ШАГ 7: проверка, что аккаунт пополнен на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
         // ШАГ 7: проверка, что баланс аккаунта равен нулю на API
@@ -97,20 +86,15 @@ public class DepositTest extends BaseUiTest {
         CreateUserRequest user = AdminSteps.createUser();
         CreateAccountResponse account = UserSteps.createAccount(user.getUsername(), user.getPassword());
         String accountNumber = account.getAccountNumber();
-
         authAsUser(user);
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToDeposit();
-
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что ошибка ❌ Please deposit less or equal to 5000$.
-        // ШАГ 7: проверка, что аккаунт не был пополнен на UI
         float deposit = RandomData.getDeposit() + 5000;
-        new DepositPage().depositUnSuccess(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000)
-                .switchToUserDashboard()
-                .switchToDeposit()
+        new DepositPage().open().depositUnSuccess(accountNumber, deposit)
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000);
+        // ШАГ 7: проверка, что аккаунт пополнен на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
         // ШАГ 8: проверка, что баланс аккаунта равен нулю на API
@@ -133,18 +117,14 @@ public class DepositTest extends BaseUiTest {
 
         authAsUser(user);
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).switchToDeposit();
-
         // ШАГИ ТЕСТА
         // ШАГ 5: юзер нажимает 💰 Deposit Money
         // ШАГ 6: проверка, что ошибка ❌ Please enter a valid amount.
-        // ШАГ 7: проверка, что аккаунт не был пополнен на UI
         float deposit = RandomData.getDeposit() - 5000;
-        new DepositPage().depositUnSuccess(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_AMOUNT)
-                .switchToUserDashboard()
-                .switchToDeposit()
+        new DepositPage().open().depositUnSuccess(accountNumber, deposit)
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_AMOUNT);
+        // ШАГ 7: проверка, что аккаунт пополнен на UI
+        new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
 
         // ШАГ 8: проверка, что баланс аккаунта равен нулю на API

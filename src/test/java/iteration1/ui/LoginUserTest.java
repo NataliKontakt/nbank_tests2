@@ -16,8 +16,6 @@ public class LoginUserTest extends BaseUiTest {
 
         new LoginPage().open().login(admin.getUsername(), admin.getPassword())
                 .getPage(AdminPanel.class).getAdminPanelText().should(Condition.visible);
-
-
     }
 
     @Test
@@ -25,7 +23,8 @@ public class LoginUserTest extends BaseUiTest {
         CreateUserRequest user = AdminSteps.createUser();
 
         new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).getWelcomeText().should(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
+                .getPage(UserDashboard.class).getWelcomeText()
+                .should(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
 
     }
 }

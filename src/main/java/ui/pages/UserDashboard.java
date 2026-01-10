@@ -15,7 +15,6 @@ public class UserDashboard extends BasePage<UserDashboard>{
     private SelenideElement depositMoneyButton = $(Selectors.byText("💰 Deposit Money"));
     private SelenideElement transferMoneyButton = $(Selectors.byText("🔄 Make a Transfer"));
     private SelenideElement createNewAccountButton = $(Selectors.byText("➕ Create New Account"));
-    //private SelenideElement userInfo = $(Selectors.byText("@")).shouldBe(Condition.visible);
     private final SelenideElement userNameText = $(Selectors.byClassName("user-name")).shouldBe(Condition.visible);
     private final SelenideElement userUserNameText = $(Selectors.byClassName("user-username")).shouldBe(Condition.visible);
     private String noName = "Noname";
@@ -28,20 +27,6 @@ public class UserDashboard extends BasePage<UserDashboard>{
     public UserDashboard createNewAccount(){
         createNewAccountButton.click();
         return  this;
-    }
-    public DepositPage switchToDeposit(){
-        depositMoneyButton.click();
-        return page(DepositPage.class);
-    }
-
-    public TransferPage switchToTransfer(){
-        transferMoneyButton.click();
-        return page(TransferPage.class);
-    }
-
-    public EditProfilePage switchToEditProfile() {
-        userUserNameText.click();
-        return page(EditProfilePage.class);
     }
 
     public UserDashboard checkChangeNameUi(String name){
