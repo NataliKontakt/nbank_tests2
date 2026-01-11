@@ -6,6 +6,7 @@ import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.UserSession;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import ui.pages.*;
@@ -16,6 +17,7 @@ public class DepositTest extends BaseUiTest {
     float zeroBalance = 0;
 
     @Test
+    @UserSession
     public void userCanDepositAccountTest() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
         // ШАГ 1: админ логинится в банке

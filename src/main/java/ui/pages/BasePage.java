@@ -1,11 +1,17 @@
 package ui.pages;
 
+import api.models.CreateUserRequest;
+import api.specs.RequestSpec;
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.Alert;
+import ui.elements.BaseElement;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,9 +46,19 @@ public abstract class BasePage<T extends BasePage> {
 
         return (T) this;
     }
-    public UserDashboard switchToUserDashboard() {
-        homeButton.click();
-        return page(UserDashboard.class);
+    public static void authAsUser(String username, String password) {
+        Selenide.open("/");
+        String userAuthHeader = RequestSpec.getUserAuthHeader(username, password);
+        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+    }
+
+    public static void authAsUser(CreateUserRequest createUserRequest) {
+        authAsUser(createUserRequest.getUsername(), createUserRequest.getPassword());
+    }
+
+    //ElementsCollection -> List<BaseElement>
+    protected <T extends BaseElement> List<T> generatePageElements(ElementsCollection elementsCollection, Function<SelenideElement, T> constructor) {
+        return elementsCollection.stream().map(constructor).toList();
     }
 
 }

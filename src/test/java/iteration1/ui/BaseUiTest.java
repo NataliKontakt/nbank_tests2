@@ -5,13 +5,19 @@ import api.models.CreateUserRequest;
 import api.specs.RequestSpec;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
+import common.extensions.AdminSessionExtension;
+import common.extensions.UserSessionExtension;
+import common.extensions.BrowserMatchExtension;
 import iteration1.api.BaseTest;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Map;
 
 import static com.codeborne.selenide.Selenide.executeJavaScript;
-
+@ExtendWith(AdminSessionExtension.class)
+@ExtendWith(UserSessionExtension.class)
+@ExtendWith(BrowserMatchExtension.class)
 public class BaseUiTest extends BaseTest {
 
     @BeforeAll
@@ -35,6 +41,5 @@ public class BaseUiTest extends BaseTest {
     public void authAsUser(CreateUserRequest createUserRequest) {
         authAsUser(createUserRequest.getUsername(), createUserRequest.getPassword());
     }
-
 
 }

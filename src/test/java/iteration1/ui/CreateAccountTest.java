@@ -4,6 +4,8 @@ import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.LoginPage;
@@ -16,19 +18,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateAccountTest extends BaseUiTest {
 
     @Test
+    @UserSession
     public void userCanCreateAccountTest() {
         CreateUserRequest user = AdminSteps.createUser();
 
-        authAsUser(user);
+        authAsUser(AdminSteps.createUser());
 
         new LoginPage().open().login(user.getUsername(), user.getPassword())
                 .getPage(UserDashboard.class).createNewAccount()
-                .checkAlertMessageAndAccept(BankAlert.NEW_ACCOUNT_CREATED,
-                        new UserSteps(user.getUsername(), user.getPassword())
-                                .getAllAccounts().getFirst().getAccountNumber());
+                .checkAlertMessageAndAccept
+                        (BankAlert.NEW_ACCOUNT_CREATED,
+                                new UserSteps(user.getUsername(), user.getPassword())
+                                        .getAllCreatedAccounts().getFirst().getAccountNumber());
 
         List<CreateAccountResponse> createdAccounts = new UserSteps(user.getUsername(), user.getPassword())
-                .getAllAccounts();
+                .getAllCreatedAccounts();
 
         assertThat(createdAccounts).hasSize(1);
 

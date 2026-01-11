@@ -8,7 +8,6 @@ import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +54,7 @@ public class UserSteps {
                 .getAll(Account[].class);
     }
 
-    public  List<CreateAccountResponse> getAllAccounts() {
+    public  List<CreateAccountResponse> getAllCreatedAccounts() {
         return new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
