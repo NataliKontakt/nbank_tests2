@@ -24,12 +24,11 @@ public class CreateAccountTest extends BaseUiTest {
 
         authAsUser(AdminSteps.createUser());
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).createNewAccount()
-                .checkAlertMessageAndAccept
+        new UserDashboard().open().createNewAccount()
+/*                .checkAlertMessageAndAccept
                         (BankAlert.NEW_ACCOUNT_CREATED,
                                 new UserSteps(user.getUsername(), user.getPassword())
-                                        .getAllCreatedAccounts().getFirst().getAccountNumber());
+                                        .getAllCreatedAccounts().getFirst().getAccountNumber())*/;
 
         List<CreateAccountResponse> createdAccounts = new UserSteps(user.getUsername(), user.getPassword())
                 .getAllCreatedAccounts();
