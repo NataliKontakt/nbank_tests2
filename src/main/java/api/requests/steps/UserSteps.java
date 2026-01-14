@@ -16,7 +16,7 @@ public class UserSteps {
     private String password;
 
     public UserSteps(String username, String password) {
-        this.username = username;
+      this.username = username;
         this.password = password;
     }
 
@@ -54,7 +54,7 @@ public class UserSteps {
                 .getAll(Account[].class);
     }
 
-    public  List<CreateAccountResponse> getAllCreatedAccounts() {
+    public  List<CreateAccountResponse> getAllCreatedAccounts(String username, String password) {
         return new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,

@@ -35,7 +35,7 @@ public class DepositTest extends BaseUiTest {
         // ШАГ 6: проверка, что есть аллерт на UI
         float deposit = RandomData.getDeposit();
         new DepositPage().open().depositSuccess(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY, deposit, accountNumber);
+                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY.getMessage(), deposit, accountNumber);
         // ШАГ 7: проверка, что аккаунт пополнен на UI
         new TransferPage().open()
                 .checkingAccountBalanceUi(deposit);
@@ -66,7 +66,7 @@ public class DepositTest extends BaseUiTest {
         // ШАГ 6: проверка, что ошибка ❌ Please select an account.
         float deposit = RandomData.getDeposit();
         new DepositPage().open().depositWithoutSelectingAccount(deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_SELECT_AN_ACCOUNT);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_SELECT_AN_ACCOUNT.getMessage());
         // ШАГ 7: проверка, что аккаунт пополнен на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
@@ -94,7 +94,7 @@ public class DepositTest extends BaseUiTest {
         // ШАГ 6: проверка, что ошибка ❌ Please deposit less or equal to 5000$.
         float deposit = RandomData.getDeposit() + 5000;
         new DepositPage().open().depositUnSuccess(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000.getMessage());
         // ШАГ 7: проверка, что аккаунт пополнен на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);
@@ -124,7 +124,7 @@ public class DepositTest extends BaseUiTest {
         // ШАГ 6: проверка, что ошибка ❌ Please enter a valid amount.
         float deposit = RandomData.getDeposit() - 5000;
         new DepositPage().open().depositUnSuccess(accountNumber, deposit)
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_AMOUNT);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_AMOUNT.getMessage());
         // ШАГ 7: проверка, что аккаунт пополнен на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber, zeroBalance);

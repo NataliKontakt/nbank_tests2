@@ -52,7 +52,7 @@ public class TransferTest extends BaseUiTest {
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY.getMessage(), transfer, accountNumber2);
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
@@ -98,7 +98,7 @@ public class TransferTest extends BaseUiTest {
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY.getMessage(), transfer, accountNumber2);
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1);
@@ -146,7 +146,7 @@ public class TransferTest extends BaseUiTest {
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY, transfer, accountNumber2);
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY.getMessage(), transfer, accountNumber2);
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
@@ -192,7 +192,7 @@ public class TransferTest extends BaseUiTest {
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM.getMessage());
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
@@ -237,7 +237,7 @@ public class TransferTest extends BaseUiTest {
                 .recipientName(recipientName)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM.getMessage());
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
@@ -282,7 +282,7 @@ public class TransferTest extends BaseUiTest {
                 .accountRecipientNumber(accountNotExist)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.NO_USER_FOUND_WITH_THIS_ACCOUNT_NUMBER);
+                .checkAlertMessageAndAccept(BankAlert.NO_USER_FOUND_WITH_THIS_ACCOUNT_NUMBER.getMessage());
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1);
@@ -325,7 +325,7 @@ public class TransferTest extends BaseUiTest {
                 .recipientName(recipientName)
                 .accountRecipientNumber(accountNumber2)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM.getMessage());
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
@@ -371,7 +371,7 @@ public class TransferTest extends BaseUiTest {
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.ERROR_INVALID_TRANSFER_INSUFFICIENT_FUNDS_OR_INVALID_ACCOUNTS);
+                .checkAlertMessageAndAccept(BankAlert.ERROR_INVALID_TRANSFER_INSUFFICIENT_FUNDS_OR_INVALID_ACCOUNTS.getMessage());
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
@@ -417,7 +417,7 @@ public class TransferTest extends BaseUiTest {
                 .accountRecipientNumber(accountNumber2)
                 .transfer(transfer)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000);
+                .checkAlertMessageAndAccept(BankAlert.ERROR_TRANSFER_AMOUNT_CANNOT_EXCEED_10000.getMessage());
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)
@@ -464,7 +464,7 @@ public class TransferTest extends BaseUiTest {
                 .transfer(transfer)
                 .withConfirmCheck(false)
                 .execute()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_FILL_ALL_FIELDS_AND_CONFIRM.getMessage());
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, deposit1)

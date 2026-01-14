@@ -37,7 +37,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         String name = RandomData.getName();
 
         new EditProfilePage().open().changeName(name)
-                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY);
+                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage());
 
         // ШАГ 6: проверка, что имя изменилось на UI
         new UserDashboard().open().checkChangeNameUi(name);
@@ -71,7 +71,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГ 4: юзер изменяет свое имя на такое же
         // ШАГ 5: проверка, что есть аллерт на UI ⚠️ New name is the same as the current one.
         new EditProfilePage().open().changeName(name)
-                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE);
+                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE.getMessage());
 
         // ШАГ 6: проверка, что имя изменилось на UI
         new UserDashboard().open().checkChangeNameUi(name);
@@ -95,7 +95,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
         // ШАГ 4: юзер изменяет свое имя - пустое поле
         // ШАГ 5: проверка, что есть аллерт на UI ❌ Please enter a valid name.
         new EditProfilePage().open().changeNameForEmptyName()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_NAME);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_NAME.getMessage());
 
         // ШАГ 6: проверка, что имя изменилось на UI
         new UserDashboard().open().checkNotChangeNameUi();
@@ -121,7 +121,7 @@ public class ChangingNameInProfileTest extends BaseUiTest {
 
         String invalidName = RandomData.getName() + 1;
         new EditProfilePage().open().changeName(invalidName)
-                .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS_ONLY);
+                .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS_ONLY.getMessage());
 
         // ШАГ 6: проверка, что имя изменилось на UI
         new UserDashboard().open().checkNotChangeNameUi();

@@ -31,10 +31,10 @@ public abstract class BasePage<T extends BasePage> {
         return Selenide.page(pageClass);
     }
 
-    public T checkAlertMessageAndAccept(BankAlert bankAlert, Object... params) {
+    public T checkAlertMessageAndAccept(String bankAlert, Object... params) {
         Alert alert = switchTo().alert();
         String actualMessage = alert.getText();
-        String expectedPattern = bankAlert.getMessage();
+        String expectedPattern = bankAlert;
 
         String expectedMessage = params.length > 0
                 ? String.format(Locale.US, expectedPattern, params) // Форматируем всё сообщение
