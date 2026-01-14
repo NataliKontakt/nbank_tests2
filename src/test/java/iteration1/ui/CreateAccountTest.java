@@ -24,8 +24,7 @@ public class CreateAccountTest extends BaseUiTest {
 
         authAsUser(AdminSteps.createUser());
 
-        new LoginPage().open().login(user.getUsername(), user.getPassword())
-                .getPage(UserDashboard.class).createNewAccount()
+        new UserDashboard().createNewAccount()
                 .checkAlertMessageAndAccept
                         (BankAlert.NEW_ACCOUNT_CREATED,
                                 new UserSteps(user.getUsername(), user.getPassword())

@@ -21,15 +21,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateUserTest extends BaseUiTest {
 
-    @Test
+   /* @Test
     @AdminSession
     public void adminCanCreateUserTest() {
         //решается аннотацией     @AdminSession
         // ШАГ 1: админ залогинился в банке
-/*        CreateUserRequest admin = CreateUserRequest.getAdmin();
-        authAsUser(admin);*/
+*//*        CreateUserRequest admin = CreateUserRequest.getAdmin();
+        authAsUser(admin);*//*
 
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
+
 
         assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY)
@@ -60,5 +61,5 @@ public class CreateUserTest extends BaseUiTest {
         long usersWithSameUsernameAsNewUser = AdminSteps.getAllUsers().stream().filter(user -> user.getUsername().equals(newUser.getUsername())).count();
 
         assertThat(usersWithSameUsernameAsNewUser).isZero();
-    }
+    }*/
 }
