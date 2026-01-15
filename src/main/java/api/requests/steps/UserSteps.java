@@ -37,7 +37,7 @@ public class UserSteps {
                 .get();
     }
 
-    public static DepositResponse makeDeposit(String username, String password, long id, float deposit){
+    public DepositResponse makeDeposit(long id, float deposit){
         return new ValidatedCrudRequester<DepositResponse>(RequestSpec.authSpec(username, password),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
@@ -46,7 +46,7 @@ public class UserSteps {
                         Map.of("id", id, "balance", deposit)));
     }
 
-    public static List<Account> getAllAccounts(String username, String password) {
+    public List<Account> getAllAccounts() {
         return new ValidatedCrudRequester<Account>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
@@ -62,7 +62,7 @@ public class UserSteps {
     }
 
     public Account getAccountByNumber(String accountNumber) {
-        return getAllAccounts(username, password).stream()
+        return getAllAccounts().stream()
                 .filter(account -> accountNumber.equals(account.getAccountNumber()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException(

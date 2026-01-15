@@ -20,11 +20,12 @@ import static api.specs.ResponseSpec.errorDepositCannotExceed_5000;
 import static api.specs.ResponseSpec.errorDepositLessZero;
 
 public class DepositTest extends BaseTest {
-    /*CreateUserRequest user1;
+    CreateUserRequest user1;
     CustomerAccountsResponse customerAccounts;
     CustomerAccountsResponse customerAccountsNew;
     CustomerAccountsResponse accountsNegativeResponse;
     DepositResponse depositResponse;
+    UserSteps userSteps;
     long id;
     float balance;
 
@@ -32,18 +33,18 @@ public class DepositTest extends BaseTest {
     public void prepareData(TestInfo testInfo) {
         //создание объекта пользователя
         user1 = AdminSteps.createUser();
-
+        userSteps = new UserSteps(user1.getUsername(), user1.getPassword());
         // создаем аккаунт(счет)
-        UserSteps.createAccount(user1.getUsername(), user1.getPassword());
+        userSteps.createAccount();
 
         //через гет получаем номер аккаунта
-        customerAccounts = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        customerAccounts = userSteps.getAccount();
 
         id = customerAccounts.getAccounts().getFirst().getId();
         balance = customerAccounts.getAccounts().getFirst().getBalance();
 
         if (testInfo.getTags().contains("Negative")) {
-            accountsNegativeResponse = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+            accountsNegativeResponse =  userSteps.getAccount();
         }
 
     }
@@ -52,7 +53,7 @@ public class DepositTest extends BaseTest {
     public void assertTest(TestInfo testInfo) {
         //через гет получаем новый баланс и сверяем с ожидаемым
 
-        customerAccountsNew = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        customerAccountsNew = userSteps.getAccount();
 
         if (testInfo.getTags().contains("Positive")) {
             ModelAssertions.assertThatModels(depositResponse, customerAccountsNew).match();
@@ -152,12 +153,12 @@ public class DepositTest extends BaseTest {
     public void depositToSomeoneAccountIsNotPossibleTest() {
         //создание объекта 2 пользователя
         CreateUserRequest user2 = AdminSteps.createUser();
-
+        UserSteps userSteps2 = new UserSteps(user2.getUsername(), user2.getPassword());
         // создаем аккаунт(счет) 2 пользователя
-        UserSteps.createAccount(user2.getUsername(), user2.getPassword());
+        userSteps2.createAccount();
 
         //через гет получаем номер аккаунта 2 пользователя
-        CustomerAccountsResponse customerAccounts2 = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse customerAccounts2 = userSteps2.getAccount();
 
         long id2 = customerAccounts2.getAccounts().getFirst().getId();
         DepositRequest depositRequest = RandomModelGenerator.generate(DepositRequest.class);
@@ -169,6 +170,6 @@ public class DepositTest extends BaseTest {
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(depositRequest);
 
-    }*/
+    }
 
 }
