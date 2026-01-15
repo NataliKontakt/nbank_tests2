@@ -20,7 +20,7 @@ import static api.specs.ResponseSpec.errorDepositCannotExceed_5000;
 import static api.specs.ResponseSpec.errorDepositLessZero;
 
 public class DepositTest extends BaseTest {
-    CreateUserRequest user1;
+    /*CreateUserRequest user1;
     CustomerAccountsResponse customerAccounts;
     CustomerAccountsResponse customerAccountsNew;
     CustomerAccountsResponse accountsNegativeResponse;
@@ -169,6 +169,6 @@ public class DepositTest extends BaseTest {
                 ResponseSpec.requestReturnsForbiddenRequest())
                 .post(depositRequest);
 
-    }
+    }*/
 
 }

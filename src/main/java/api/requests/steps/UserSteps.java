@@ -21,7 +21,7 @@ public class UserSteps {
     }
 
 
-    public static CreateAccountResponse createAccount(String username, String password){
+    public CreateAccountResponse createAccount(){
         return new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.ACCOUNTS,
@@ -29,7 +29,7 @@ public class UserSteps {
                 .post(null);
     }
 
-    public static CustomerAccountsResponse getAccount(String username, String password){
+    public CustomerAccountsResponse getAccount(){
         return new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
@@ -54,14 +54,14 @@ public class UserSteps {
                 .getAll(Account[].class);
     }
 
-    public  List<CreateAccountResponse> getAllCreatedAccounts(String username, String password) {
+    public  List<CreateAccountResponse> getAllCreatedAccounts() {
         return new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk()).getAll(CreateAccountResponse[].class);
     }
 
-    public static Account getAccountByNumber(String username, String password, String accountNumber) {
+    public Account getAccountByNumber(String accountNumber) {
         return getAllAccounts(username, password).stream()
                 .filter(account -> accountNumber.equals(account.getAccountNumber()))
                 .findFirst()

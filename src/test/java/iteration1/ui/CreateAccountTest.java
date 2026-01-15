@@ -17,16 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateAccountTest extends BaseUiTest {
 
     @Test
-    //@UserSession
+    @UserSession
     public void userCanCreateAccountTest() {
-        CreateUserRequest user = AdminSteps.createUser();
+/*        CreateUserRequest user = AdminSteps.createUser();
 
-        authAsUser(user);
+        authAsUser(user);*/
 
         new UserDashboard().open().createNewAccount();
 
-        List<CreateAccountResponse> createdAccounts = new UserSteps(user.getUsername(), user.getPassword())
-                .getAllCreatedAccounts(user.getUsername(), user.getPassword());
+        List<CreateAccountResponse> createdAccounts = SessionStorage.getSteps()
+                .getAllCreatedAccounts();
 
         new UserDashboard().checkAlertMessageAndAccept(BankAlert.NEW_ACCOUNT_CREATED.getMessage(),
                 createdAccounts.getFirst().getAccountNumber());

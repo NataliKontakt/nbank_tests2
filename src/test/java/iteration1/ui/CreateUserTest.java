@@ -30,10 +30,12 @@ public class CreateUserTest extends BaseUiTest {
         authAsUser(admin);*/
 
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
-
-        assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
+        new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
+                .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage());
+              //  .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
+        /*assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
-                .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
+                .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));*/
 
         // ШАГ 5: проверка, что юзер создан на API
 

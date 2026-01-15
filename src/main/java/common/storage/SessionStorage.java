@@ -2,10 +2,12 @@ package common.storage;
 
 import api.models.CreateUserRequest;
 import api.requests.steps.UserSteps;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+
 
 public class SessionStorage {
     private static final SessionStorage INSTANCE = new SessionStorage();

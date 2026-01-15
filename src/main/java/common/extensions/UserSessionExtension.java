@@ -14,7 +14,7 @@ import java.util.List;
 public class UserSessionExtension implements BeforeEachCallback {
     @Override
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
-        //Шаг 1. Проверка, есть ли у теста аннотация  UserSession
+        //Шаг 1. Проверка, есть ли у теста аннотация UserSession
         UserSession annotation = extensionContext.getRequiredTestMethod()
                 .getAnnotation(UserSession.class);
         if (annotation != null){ //если есть, добавляем в local storage токен админа

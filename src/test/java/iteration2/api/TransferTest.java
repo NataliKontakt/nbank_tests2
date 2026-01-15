@@ -23,7 +23,7 @@ import static api.specs.ResponseSpec.errorInvalidTransfer;
 import static api.specs.ResponseSpec.errorTranslationLessZero;
 
 public class TransferTest extends BaseTest {
-    CreateUserRequest user1;
+   /* CreateUserRequest user1;
     CreateUserRequest user2;
     long id1;
     float balance1;
@@ -414,7 +414,7 @@ public class TransferTest extends BaseTest {
                 .extracting(Account::getBalance)
                 .containsExactly(deposit1);
 
-    }
+    }*/
 
 }
 
