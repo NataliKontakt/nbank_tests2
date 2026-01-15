@@ -2,10 +2,7 @@ package ui.pages;
 
 import api.models.CreateUserRequest;
 import api.specs.RequestSpec;
-import com.codeborne.selenide.ElementsCollection;
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
-import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.*;
 import org.openqa.selenium.Alert;
 import ui.elements.BaseElement;
 
@@ -21,7 +18,9 @@ public abstract class BasePage<T extends BasePage> {
     protected SelenideElement passwordInput = $(Selectors.byAttribute("placeholder","Password"));
     protected SelenideElement selectAccount = $((".account-selector"));
     protected SelenideElement enterAmountInput = $(Selectors.byAttribute("placeholder", "Enter amount"));
-    private SelenideElement homeButton =  $(Selectors.byText("🏠 Home"));
+    protected SelenideElement homeButton =  $(Selectors.byText("🏠 Home"));
+    protected SelenideElement userNameText = $(Selectors.byClassName("user-name"));
+    protected SelenideElement userUserNameText = $(Selectors.byClassName("user-username"));
     public abstract String url();
 
     public T open() {
@@ -32,10 +31,10 @@ public abstract class BasePage<T extends BasePage> {
         return Selenide.page(pageClass);
     }
 
-    public T checkAlertMessageAndAccept(BankAlert bankAlert, Object... params) {
+    public T checkAlertMessageAndAccept(String bankAlert, Object... params) {
         Alert alert = switchTo().alert();
         String actualMessage = alert.getText();
-        String expectedPattern = bankAlert.getMessage();
+        String expectedPattern = bankAlert;
 
         String expectedMessage = params.length > 0
                 ? String.format(Locale.US, expectedPattern, params) // Форматируем всё сообщение

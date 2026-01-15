@@ -32,7 +32,7 @@ public class CreateUserTest extends BaseUiTest {
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
         assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
-                .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY)
+                .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
                 .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
 
         // ШАГ 5: проверка, что юзер создан на API
@@ -52,7 +52,7 @@ public class CreateUserTest extends BaseUiTest {
         newUser.setUsername("a");
 
         assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
-                .checkAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_HARACTERS)
+                .checkAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_HARACTERS.getMessage())
                 .getAllUsers().stream().noneMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
 
         // ШАГ 5: проверка, что юзер НЕ создан на API

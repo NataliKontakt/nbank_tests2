@@ -15,8 +15,6 @@ public class UserDashboard extends BasePage<UserDashboard>{
     private SelenideElement depositMoneyButton = $(Selectors.byText("💰 Deposit Money"));
     private SelenideElement transferMoneyButton = $(Selectors.byText("🔄 Make a Transfer"));
     private SelenideElement createNewAccountButton = $(Selectors.byText("➕ Create New Account"));
-    private final SelenideElement userNameText = $(Selectors.byClassName("user-name")).shouldBe(Condition.visible);
-    private final SelenideElement userUserNameText = $(Selectors.byClassName("user-username")).shouldBe(Condition.visible);
     private String noName = "Noname";
 
     @Override
