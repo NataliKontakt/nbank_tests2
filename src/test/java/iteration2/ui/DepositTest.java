@@ -3,6 +3,8 @@ package iteration2.ui;
 import api.generators.RandomData;
 import api.models.Account;
 import api.models.CreateAccountResponse;
+import common.annotations.Browsers;
+import common.annotations.Platforms;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import iteration1.ui.BaseUiTest;
@@ -18,6 +20,8 @@ public class DepositTest extends BaseUiTest {
 
     @Test
     @UserSession
+    @Platforms({"web"})
+    @Browsers({"chrome"})
     public void userCanDepositAccountTest() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
         // ШАГ 1: админ логинится в банке

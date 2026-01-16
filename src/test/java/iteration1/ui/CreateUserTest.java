@@ -6,6 +6,8 @@ import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
 import api.requests.steps.AdminSteps;
 import common.annotations.AdminSession;
+import common.annotations.Browsers;
+import common.annotations.Platforms;
 import org.junit.jupiter.api.Test;
 import ui.pages.AdminPanel;
 import ui.pages.BankAlert;
@@ -17,8 +19,10 @@ public class CreateUserTest extends BaseUiTest {
 
     @Test
     @AdminSession
+    @Platforms({"web"})
+    @Browsers({"chrome"})
     public void adminCanCreateUserTest() {
-        //решается аннотацией     @AdminSession
+        //решается аннотацией @AdminSession
         // ШАГ 1: админ залогинился в банке
 
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
