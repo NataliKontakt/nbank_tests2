@@ -63,9 +63,9 @@ public class TransferTest extends BaseUiTest {
         assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
         assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
     }
-/*
+
     @Test
-    @UserSession
+    @UserSession(2)
     public void userCanMakeTransferToAnotherUserAccountTest() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
         // ШАГ 1: админ логинится в банке
@@ -74,17 +74,13 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: первый юзер создает аккаунт и пополняет его
         // ШАГ 5: второй юзер создает аккаунт
 
-        CreateUserRequest user1 = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user1.getUsername(), user1.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps(1).createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user1.getUsername(), user1.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateUserRequest user2 = AdminSteps.createUser();
-        CreateAccountResponse account2 = UserSteps.createAccount(user2.getUsername(), user2.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps(2).createAccount();
         String accountNumber2 = account2.getAccountNumber();
-
-        authAsUser(user1);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -102,20 +98,19 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 8: проверка, что балансы аккаунтов изменились на UI
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1);
-
-        authAsUser(user2);
+        SessionStorage.switchToSession(2);
         new DepositPage().open()
                 .checkingAccountBalanceUi(accountNumber2, transfer);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user1.getUsername(), user1.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user2.getUsername(), user2.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps(1).getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps(2).getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
         assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
 
     }
 
-    @Test
+  /*  @Test
     @UserSession
     public void userCanMakeTransferWitEmptyName() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
