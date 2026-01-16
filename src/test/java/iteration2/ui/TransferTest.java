@@ -3,9 +3,6 @@ package iteration2.ui;
 import api.generators.RandomData;
 import api.models.Account;
 import api.models.CreateAccountResponse;
-import api.models.CreateUserRequest;
-import api.requests.steps.AdminSteps;
-import api.requests.steps.UserSteps;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import iteration1.ui.BaseUiTest;
@@ -110,7 +107,7 @@ public class TransferTest extends BaseUiTest {
 
     }
 
-  /*  @Test
+    @Test
     @UserSession
     public void userCanMakeTransferWitEmptyName() {
         // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
@@ -120,16 +117,13 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps().createAccount();
         String accountNumber2 = account2.getAccountNumber();
-
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer, не заполняет имя и делает перевод
@@ -148,8 +142,8 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber1, expectedBalance1)
                 .checkingAccountBalanceUi(accountNumber2, transfer);
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps().getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(expectedBalance1);
         assertThat(accountResponse2.getBalance()).isEqualTo(transfer);
 
@@ -165,16 +159,13 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps().createAccount();
         String accountNumber2 = account2.getAccountNumber();
-
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -196,8 +187,8 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps().getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
         assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
@@ -212,16 +203,14 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps().createAccount();
         String accountNumber2 = account2.getAccountNumber();
 
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -242,8 +231,8 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps().getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
         assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
@@ -258,15 +247,12 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
         String accountNotExist = "ACC100500";
-
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -287,7 +273,7 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber1, deposit1);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
         assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
 
     }
@@ -302,16 +288,13 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps().createAccount();
         String accountNumber2 = account2.getAccountNumber();
-
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -332,8 +315,8 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps().getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
         assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
@@ -348,16 +331,13 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps().createAccount();
         String accountNumber2 = account2.getAccountNumber();
-
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -379,8 +359,8 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps().getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
         assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
@@ -395,16 +375,13 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps().createAccount();
         String accountNumber2 = account2.getAccountNumber();
-
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -426,8 +403,8 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps().getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
         assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
     }
@@ -442,16 +419,13 @@ public class TransferTest extends BaseUiTest {
         // ШАГ 4: юзер создает первый аккаунт и пополняет его
         // ШАГ 5: юзер создает второй аккаунт
 
-        CreateUserRequest user = AdminSteps.createUser();
-        CreateAccountResponse account1 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account1 = SessionStorage.getSteps().createAccount();
         String accountNumber1 = account1.getAccountNumber();
         float deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user.getUsername(), user.getPassword(), account1.getId(), deposit1);
+        SessionStorage.getSteps().makeDeposit(account1.getId(), deposit1);
 
-        CreateAccountResponse account2 = UserSteps.createAccount(user.getUsername(), user.getPassword());
+        CreateAccountResponse account2 = SessionStorage.getSteps().createAccount();
         String accountNumber2 = account2.getAccountNumber();
-
-        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 6: юзер нажимает 🔄 Make a Transfer и делает перевод
@@ -474,10 +448,10 @@ public class TransferTest extends BaseUiTest {
                 .checkingAccountBalanceUi(accountNumber2, zeroBalance);
 
         // ШАГ 9: проверка, что аккаунт был пополнен на API
-        Account accountResponse1 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber1);
-        Account accountResponse2 = UserSteps.getAccountByNumber(user.getUsername(), user.getPassword(), accountNumber2);
+        Account accountResponse1 = SessionStorage.getSteps().getAccountByNumber(accountNumber1);
+        Account accountResponse2 = SessionStorage.getSteps().getAccountByNumber(accountNumber2);
         assertThat(accountResponse1.getBalance()).isEqualTo(deposit1);
         assertThat(accountResponse2.getBalance()).isEqualTo(zeroBalance);
-    }*/
+    }
 
 }

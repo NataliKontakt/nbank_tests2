@@ -70,7 +70,7 @@ public class UserSteps {
                 ));
     }
 
-    public static CustomerProfileResponse getCustomerProfile(String username, String password){
+    public CustomerProfileResponse getCustomerProfile(){
         return new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_PROFILE_GET,

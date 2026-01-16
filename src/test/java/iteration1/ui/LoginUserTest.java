@@ -12,7 +12,7 @@ import ui.pages.UserDashboard;
 public class LoginUserTest extends BaseUiTest {
 
     @Test
-    @Browsers({"firefox"})
+    @Browsers({"chrome"})
     public void adminCanLoginWithCorrectDataTest() {
         CreateUserRequest admin = CreateUserRequest.getAdmin();
 

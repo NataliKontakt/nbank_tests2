@@ -5,17 +5,11 @@ import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
 import api.requests.steps.AdminSteps;
-import api.specs.RequestSpec;
-import com.codeborne.selenide.Condition;
 import common.annotations.AdminSession;
-import common.extensions.AdminSessionExtension;
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import ui.pages.AdminPanel;
 import ui.pages.BankAlert;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,16 +20,10 @@ public class CreateUserTest extends BaseUiTest {
     public void adminCanCreateUserTest() {
         //решается аннотацией     @AdminSession
         // ШАГ 1: админ залогинился в банке
-/*        CreateUserRequest admin = CreateUserRequest.getAdmin();
-        authAsUser(admin);*/
 
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
         new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage());
-              //  .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
-        /*assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
-                .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
-                .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));*/
 
         // ШАГ 5: проверка, что юзер создан на API
 
