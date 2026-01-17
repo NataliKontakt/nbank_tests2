@@ -1,22 +1,22 @@
 package iteration2.api;
 
 import api.generators.RandomModelGenerator;
-import iteration1.api.BaseTest;
 import api.models.CreateUserRequest;
 import api.models.CustomerProfileResponse;
 import api.models.UpdateProfileRequest;
 import api.models.UpdateProfileResponse;
 import api.models.comparison.ModelAssertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import iteration1.api.BaseTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 

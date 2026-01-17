@@ -9,11 +9,12 @@ import io.restassured.specification.RequestSpecification;
 import api.models.LoginRequest;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+@Getter
 public class RequestSpec {
     private static Map<String, String> authHeaders = new HashMap<>(Map.of("admin", "Basic YWRtaW46YWRtaW4="));
     private RequestSpec(){};

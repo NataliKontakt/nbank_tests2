@@ -30,33 +30,35 @@ public class TransferTest extends BaseTest {
     float deposit1;
     int nonExistingId = 100500;
     CustomerAccountsResponse castomerAccount1;
+    UserSteps userSteps;
 
     @BeforeEach
     public void prepareData() {
         //создание объекта пользователя
         user1 = AdminSteps.createUser();
+        userSteps = new UserSteps(user1.getUsername(), user1.getPassword());
 
         // создаем аккаунт(счет)
-        UserSteps.createAccount(user1.getUsername(), user1.getPassword());
+        userSteps.createAccount();
 
         //через гет получаем номер аккаунта
-        castomerAccount1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        castomerAccount1 = userSteps.getAccount();
         id1 = castomerAccount1.getAccounts().getFirst().getId();
         balance1 = castomerAccount1.getAccounts().getFirst().getBalance();
 
         // вносим депозит на аккаунт 1 пользователя
         deposit1 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user1.getUsername(), user1.getPassword(), id1, deposit1);
+        userSteps.makeDeposit(id1, deposit1);
 
     }
 
     @Test
     public void userCanMakeTransferToYourOwnAccountTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        UserSteps.createAccount(user1.getUsername(), user1.getPassword());
+        userSteps.createAccount();
 
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse customerProfile = userSteps.getAccount();
 
         List<Account> accounts = customerProfile.getAccounts();
         // Находим индекс известного аккаунта
@@ -67,7 +69,7 @@ public class TransferTest extends BaseTest {
 
         // вносим депозит на 2 счет того же пользователя
         float deposit2 = RandomData.getDeposit();
-        UserSteps.makeDeposit(user1.getUsername(), user1.getPassword(), id2, deposit2);
+        userSteps.makeDeposit(id2, deposit2);
 
         float transfer = MoneyMath.subtract(deposit1, 1);
 
@@ -83,7 +85,7 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response = userSteps.getAccount();
         float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
         float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
@@ -103,18 +105,18 @@ public class TransferTest extends BaseTest {
     public void userCanMakeTransferToOtherOwnAccountTest() {
         //создание 2 пользователя
         user2 = AdminSteps.createUser();
-
+        UserSteps userSteps2 = new UserSteps(user2.getUsername(), user2.getPassword());
         // создаем аккаунт(счет) 2 пользователя
-        UserSteps.createAccount(user2.getUsername(), user2.getPassword());
+        userSteps2.createAccount();
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse customerProfile = userSteps2.getAccount();
 
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = MoneyMath.subtract(deposit1, 1);
 
-        UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
+        userSteps2.makeDeposit(id2, deposit2);
 
         TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
         transferRequest.setSenderAccountId(id1);
@@ -126,9 +128,9 @@ public class TransferTest extends BaseTest {
                 ResponseSpec.requestReturnsOk())
                 .post(transferRequest);
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response1 = userSteps.getAccount();
 
-        CustomerAccountsResponse response2 = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse response2 = userSteps2.getAccount();
         float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
         float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
@@ -159,7 +161,7 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response1 = userSteps.getAccount();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -171,9 +173,9 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToYourOwnAccountMoreThenBalanseTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        UserSteps.createAccount(user1.getUsername(), user1.getPassword());
+        userSteps.createAccount();
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse customerProfile = userSteps.getAccount();
 
         List<Account> accounts = customerProfile.getAccounts();
         // Находим индекс известного аккаунта
@@ -196,7 +198,7 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response = userSteps.getAccount();
 
         softly.assertThat(response.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -213,16 +215,17 @@ public class TransferTest extends BaseTest {
     public void userCanNotMakeTransferToOtherOwnAccountMoreThenBalansTest() {
         //создание объекта 2 пользователя
         user2 = AdminSteps.createUser();
+        UserSteps userSteps2 = new UserSteps(user2.getUsername(), user2.getPassword());
         // создаем аккаунт(счет) 2 пользователя
-        UserSteps.createAccount(user2.getUsername(), user2.getPassword());
+        userSteps2.createAccount();
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse customerProfile = userSteps2.getAccount();
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = MoneyMath.add(deposit1, RandomData.getDeposit());
 
-        UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
+        userSteps2.makeDeposit(id2, deposit2);
 
         TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
         transferRequest.setSenderAccountId(id1);
@@ -235,9 +238,9 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response1 = userSteps.getAccount();
 
-        CustomerAccountsResponse response2 = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse response2 = userSteps2.getAccount();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -253,9 +256,9 @@ public class TransferTest extends BaseTest {
     @Test
     public void userCanNotMakeTransferToYourOwnAccountNegativeSumTest() {
         // создаем второй аккаунт(счет) того же пользователя
-        UserSteps.createAccount(user1.getUsername(), user1.getPassword());
+        userSteps.createAccount();
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse customerProfile = userSteps.getAccount();
 
         List<Account> accounts = customerProfile.getAccounts();
         // Находим индекс известного аккаунта
@@ -278,7 +281,7 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response = userSteps.getAccount();
 
         softly.assertThat(response.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -295,18 +298,18 @@ public class TransferTest extends BaseTest {
     public void userCanNotMakeTransferToOtherOwnAccountNegativeSumTest() {
         //создание объекта 2 пользователя
         user2 = AdminSteps.createUser();
-
+        UserSteps userSteps2 = new UserSteps(user2.getUsername(), user2.getPassword());
         // создаем аккаунт(счет) 2 пользователя
-        UserSteps.createAccount(user2.getUsername(), user2.getPassword());
+        userSteps2.createAccount();
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse customerProfile = userSteps2.getAccount();
 
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = -RandomData.getDeposit();
 
-        UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
+        userSteps2.makeDeposit(id2, deposit2);
 
         TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
         transferRequest.setSenderAccountId(id1);
@@ -319,9 +322,9 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response1 = userSteps.getAccount();
 
-        CustomerAccountsResponse response2 = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse response2 = userSteps2.getAccount();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -348,7 +351,7 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response1 = userSteps.getAccount();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -370,7 +373,7 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response1 = userSteps.getAccount();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)
@@ -383,18 +386,18 @@ public class TransferTest extends BaseTest {
 
         //создание объекта 2 пользователя
         user2 = AdminSteps.createUser();
-
+        UserSteps userSteps2 = new UserSteps(user2.getUsername(), user2.getPassword());
         // создаем аккаунт(счет) 2 пользователя
-        UserSteps.createAccount(user2.getUsername(), user2.getPassword());
+        userSteps2.createAccount();
         //через гет получаем номер аккаунта
-        CustomerAccountsResponse customerProfile = UserSteps.getAccount(user2.getUsername(), user2.getPassword());
+        CustomerAccountsResponse customerProfile = userSteps2.getAccount();
 
         long id2 = customerProfile.getAccounts().getFirst().getId();
 
         float deposit2 = RandomData.getDeposit();
         float transfer = RandomData.getDeposit();
 
-        UserSteps.makeDeposit(user2.getUsername(), user2.getPassword(), id2, deposit2);
+        userSteps2.makeDeposit(id2, deposit2);
 
         TransferRequest transferRequest = RandomModelGenerator.generate(TransferRequest.class);
         transferRequest.setSenderAccountId(id2);
@@ -407,7 +410,7 @@ public class TransferTest extends BaseTest {
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
-        CustomerAccountsResponse response1 = UserSteps.getAccount(user1.getUsername(), user1.getPassword());
+        CustomerAccountsResponse response1 = userSteps.getAccount();
 
         softly.assertThat(response1.getAccounts())
                 .filteredOn(account -> account.getId() == id1)

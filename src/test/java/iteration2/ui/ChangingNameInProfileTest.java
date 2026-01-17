@@ -2,133 +2,87 @@ package iteration2.ui;
 
 import api.generators.RandomData;
 import api.generators.RandomModelGenerator;
-import api.models.CreateUserRequest;
 import api.models.CustomerProfileResponse;
 import api.models.UpdateProfileRequest;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
-import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import iteration1.ui.BaseUiTest;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.EditProfilePage;
 import ui.pages.UserDashboard;
 
-import static api.requests.steps.UserSteps.getCustomerProfile;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangingNameInProfileTest extends BaseUiTest {
 
     @Test
+    @UserSession
     public void userCanChangeNameInProfileTest() throws InterruptedException {
-        // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
-        // ШАГ 1: админ логинится в банке
-        // ШАГ 2: админ создает юзера
-        // ШАГ 3: юзер логинится в банке
-        CreateUserRequest user = AdminSteps.createUser();
-        authAsUser(user);
-
-        // ШАГИ ТЕСТА
-        // ШАГ 4: юзер изменяет свое имя
-        // ШАГ 5: проверка, что есть аллерт на UI ✅ Name updated successfully!
-        // ШАГ 6: проверка, что имя изменилось на UI
         String name = RandomData.getName();
-
+        //проверка, что есть аллерт на UI
         new EditProfilePage().open().changeName(name)
-                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY);
+                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage());
 
-        // ШАГ 6: проверка, что имя изменилось на UI
+        //проверка, что имя изменилось на UI
         new UserDashboard().open().checkChangeNameUi(name);
 
-        // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
+        //проверка, что имя изменилось на API
+        CustomerProfileResponse customerProfileResponse = SessionStorage.getSteps().getCustomerProfile();
         assertThat(customerProfileResponse.getName()).isEqualTo(name);
 
     }
 
     @Test
+    @UserSession
     public void userCanNotChangeNameOnSameName() throws InterruptedException {
-        // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
-        // ШАГ 1: админ логинится в банке
-        // ШАГ 2: админ создает юзера
-        // ШАГ 3: юзер логинится в банке
-        CreateUserRequest user = AdminSteps.createUser();
-
-        authAsUser(user);
-
         String name = RandomData.getName();
         UpdateProfileRequest updateProfileRequest = RandomModelGenerator.generate(UpdateProfileRequest.class);
         updateProfileRequest.setName(name);
-        //Изменяем имя
-        new CrudRequester(RequestSpec.authSpec(user.getUsername(), user.getPassword()),
+
+        new CrudRequester(RequestSpec.authSpec(SessionStorage.getUser().getUsername(), SessionStorage.getUser().getPassword()),
                 Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsOk())
                 .update(updateProfileRequest);
 
-        // ШАГИ ТЕСТА
-        // ШАГ 4: юзер изменяет свое имя на такое же
-        // ШАГ 5: проверка, что есть аллерт на UI ⚠️ New name is the same as the current one.
         new EditProfilePage().open().changeName(name)
-                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE);
+                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_IS_THE_SAME_AS_THE_CURRENT_ONE.getMessage());
 
-        // ШАГ 6: проверка, что имя изменилось на UI
         new UserDashboard().open().checkChangeNameUi(name);
 
-        // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
+        CustomerProfileResponse customerProfileResponse = SessionStorage.getSteps().getCustomerProfile();
         assertThat(customerProfileResponse.getName()).isEqualTo(name);
 
     }
 
     @Test
+    @UserSession
     public void userCanNotChangeNameOnEmptyNameTest() throws InterruptedException {
-        // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
-        // ШАГ 1: админ логинится в банке
-        // ШАГ 2: админ создает юзера
-        // ШАГ 3: юзер логинится в банке
-        CreateUserRequest user = AdminSteps.createUser();
-        authAsUser(user);
 
-        // ШАГИ ТЕСТА
-        // ШАГ 4: юзер изменяет свое имя - пустое поле
-        // ШАГ 5: проверка, что есть аллерт на UI ❌ Please enter a valid name.
         new EditProfilePage().open().changeNameForEmptyName()
-                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_NAME);
+                .checkAlertMessageAndAccept(BankAlert.PLEASE_ENTER_A_VALID_NAME.getMessage());
 
-        // ШАГ 6: проверка, что имя изменилось на UI
         new UserDashboard().open().checkNotChangeNameUi();
 
-        // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
+        CustomerProfileResponse customerProfileResponse = SessionStorage.getSteps().getCustomerProfile();
         assertThat(customerProfileResponse.getName()).isNull();
-
     }
 
     @Test
+    @UserSession
     public void userCanNotChangeNameOnInvalidNameTest() throws InterruptedException {
-        // ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ
-        // ШАГ 1: админ логинится в банке
-        // ШАГ 2: админ создает юзера
-        // ШАГ 3: юзер логинится в банке
-        CreateUserRequest user = AdminSteps.createUser();
-        authAsUser(user);
-
-        // ШАГИ ТЕСТА
-        // ШАГ 4: юзер изменяет свое имя
-        // ШАГ 5: проверка, что есть аллерт на UI "Name must contain two words with letters only"
 
         String invalidName = RandomData.getName() + 1;
         new EditProfilePage().open().changeName(invalidName)
-                .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS_ONLY);
+                .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS_ONLY.getMessage());
 
-        // ШАГ 6: проверка, что имя изменилось на UI
         new UserDashboard().open().checkNotChangeNameUi();
 
-        // ШАГ 7: проверка, что имя изменилось на API
-        CustomerProfileResponse customerProfileResponse = getCustomerProfile(user.getUsername(), user.getPassword());
+        CustomerProfileResponse customerProfileResponse = SessionStorage.getSteps().getCustomerProfile();
         assertThat(customerProfileResponse.getName()).isNull();
-
     }
 }

@@ -8,7 +8,6 @@ import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +16,12 @@ public class UserSteps {
     private String password;
 
     public UserSteps(String username, String password) {
-        this.username = username;
+      this.username = username;
         this.password = password;
     }
 
 
-    public static CreateAccountResponse createAccount(String username, String password){
+    public CreateAccountResponse createAccount(){
         return new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.ACCOUNTS,
@@ -30,7 +29,7 @@ public class UserSteps {
                 .post(null);
     }
 
-    public static CustomerAccountsResponse getAccount(String username, String password){
+    public CustomerAccountsResponse getAccount(){
         return new ValidatedCrudRequester<CustomerAccountsResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
@@ -38,7 +37,7 @@ public class UserSteps {
                 .get();
     }
 
-    public static DepositResponse makeDeposit(String username, String password, long id, float deposit){
+    public DepositResponse makeDeposit(long id, float deposit){
         return new ValidatedCrudRequester<DepositResponse>(RequestSpec.authSpec(username, password),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
@@ -47,7 +46,7 @@ public class UserSteps {
                         Map.of("id", id, "balance", deposit)));
     }
 
-    public static List<Account> getAllAccounts(String username, String password) {
+    public List<Account> getAllAccounts() {
         return new ValidatedCrudRequester<Account>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
@@ -55,15 +54,15 @@ public class UserSteps {
                 .getAll(Account[].class);
     }
 
-    public  List<CreateAccountResponse> getAllAccounts() {
+    public  List<CreateAccountResponse> getAllCreatedAccounts() {
         return new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpec.requestReturnsOk()).getAll(CreateAccountResponse[].class);
     }
 
-    public static Account getAccountByNumber(String username, String password, String accountNumber) {
-        return getAllAccounts(username, password).stream()
+    public Account getAccountByNumber(String accountNumber) {
+        return getAllAccounts().stream()
                 .filter(account -> accountNumber.equals(account.getAccountNumber()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException(
@@ -71,7 +70,7 @@ public class UserSteps {
                 ));
     }
 
-    public static CustomerProfileResponse getCustomerProfile(String username, String password){
+    public CustomerProfileResponse getCustomerProfile(){
         return new ValidatedCrudRequester<CustomerProfileResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.CUSTOMER_PROFILE_GET,
