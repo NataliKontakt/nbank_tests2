@@ -1,11 +1,10 @@
 package common.storage;
 
+import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.requests.steps.UserSteps;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 import static ui.pages.BasePage.authAsUser;
 
@@ -14,6 +13,7 @@ public class SessionStorage {
     private static final SessionStorage INSTANCE = new SessionStorage();
 
     private final LinkedHashMap<CreateUserRequest, UserSteps> userStepsMap = new LinkedHashMap<>();
+    private final Map<Integer, List<CreateAccountResponse>> preparedAccountsByUser = new HashMap<>();
     // Текущий активный пользователь (индекс начиная с 1)
     private int currentUserIndex = 1;
 
@@ -60,8 +60,48 @@ public class SessionStorage {
         authAsUser(user);
     }
 
+    /**
+     * Возвращает количество созданных пользователей
+     */
+    public static int getUserCount() {
+        return INSTANCE.userStepsMap.size();
+    }
+
+    /**
+     * Добавляет подготовленные аккаунты для всех пользователей
+     */
+    public static void addPreparedAccounts(Map<Integer, List<CreateAccountResponse>> allAccounts) {
+        INSTANCE.preparedAccountsByUser.clear();
+        INSTANCE.preparedAccountsByUser.putAll(allAccounts);
+    }
+
+    /**
+     * Возвращает подготовленный аккаунт по индексу для текущего пользователя
+     */
+    public static CreateAccountResponse getPreparedAccount(int accountIndex) {
+        return getPreparedAccount(INSTANCE.currentUserIndex, accountIndex);
+    }
+
+    /**
+     * Возвращает подготовленный аккаунт по индексу для указанного пользователя
+     */
+    public static CreateAccountResponse getPreparedAccount(int userIndex, int accountIndex) {
+        List<CreateAccountResponse> accounts = INSTANCE.preparedAccountsByUser.get(userIndex);
+        if (accounts == null || accounts.size() < accountIndex) {
+            throw new IllegalStateException(
+                    String.format("Подготовленный аккаунт %d для пользователя %d не найден",
+                            accountIndex, userIndex)
+            );
+        }
+        return accounts.get(accountIndex - 1);
+    }
+
+    /**
+     * Полная очистка SessionStorage
+     */
     public static void clear() {
         INSTANCE.userStepsMap.clear();
+        INSTANCE.preparedAccountsByUser.clear();
         INSTANCE.currentUserIndex = 1;
     }
 }

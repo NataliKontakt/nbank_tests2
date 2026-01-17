@@ -22,14 +22,9 @@ public class CreateUserTest extends BaseUiTest {
     @Platforms({"web"})
     @Browsers({"chrome"})
     public void adminCanCreateUserTest() {
-        //решается аннотацией @AdminSession
-        // ШАГ 1: админ залогинился в банке
-
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
         new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage());
-
-        // ШАГ 5: проверка, что юзер создан на API
 
         CreateUserResponse createdUser = AdminSteps.getAllUsers().stream()
                 .filter(user -> user.getUsername().equals(newUser.getUsername()))
@@ -41,15 +36,12 @@ public class CreateUserTest extends BaseUiTest {
     @Test
     @AdminSession
     public void adminCannotCreateUserWithInvalidDataTest() {
-        // ШАГ 2: админ создает юзера в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
         newUser.setUsername("a");
 
         assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_HARACTERS.getMessage())
                 .getAllUsers().stream().noneMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
-
-        // ШАГ 5: проверка, что юзер НЕ создан на API
 
         long usersWithSameUsernameAsNewUser = AdminSteps.getAllUsers().stream().filter(user -> user.getUsername().equals(newUser.getUsername())).count();
 
