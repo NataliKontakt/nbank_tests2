@@ -13,6 +13,7 @@ import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import iteration1.api.BaseTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,7 +23,8 @@ import java.util.stream.Stream;
 
 import static api.specs.ResponseSpec.errorNameMustContainTwoWords;
 
-
+@Tag("api")
+@Tag("iteration-2")
 public class ChangingNameInProfileTest extends BaseTest {
 
     @Test

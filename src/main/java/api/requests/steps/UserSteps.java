@@ -11,6 +11,8 @@ import api.specs.ResponseSpec;
 import java.util.List;
 import java.util.Map;
 
+import static io.qameta.allure.Allure.step;
+
 public class UserSteps {
     private String username;
     private String password;
@@ -22,11 +24,14 @@ public class UserSteps {
 
 
     public CreateAccountResponse createAccount(){
-        return new ValidatedCrudRequester<CreateAccountResponse>(
+
+        return step("Пользователь создает аккаунт", () -> {
+            return new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(username, password),
                 Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
                 .post(null);
+        });
     }
 
     public CustomerAccountsResponse getAccount(){
@@ -38,12 +43,14 @@ public class UserSteps {
     }
 
     public DepositResponse makeDeposit(long id, float deposit){
+        return step("Пользователь пополняет депозит", () -> {
         return new ValidatedCrudRequester<DepositResponse>(RequestSpec.authSpec(username, password),
                 Endpoint.DEPOSIT,
                 ResponseSpec.requestReturnsOk())
                 .post(RandomModelGenerator.generate(
                         DepositRequest.class,
                         Map.of("id", id, "balance", deposit)));
+        });
     }
 
     public List<Account> getAllAccounts() {

@@ -1,6 +1,5 @@
 package ui.pages;
 
-import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
 
 import static com.codeborne.selenide.Selenide.$;
@@ -8,6 +7,7 @@ import static com.codeborne.selenide.Selenide.$;
 public class LoginPage extends BasePage<LoginPage>{
 
     private SelenideElement button = $("button");
+    private static final String WELCOME = "Welcome, noname!";
     @Override
     public String url() {
         return "/login";
@@ -19,9 +19,7 @@ public class LoginPage extends BasePage<LoginPage>{
         button.click();
         return  this;
     }
+    public static String getWelcomeText() {
+        return WELCOME;
+    }
 }
-/*
-* $(Selectors.byAttribute("placeholder","Username")).sendKeys(user.getUsername());
-        $(Selectors.byAttribute("placeholder","Password")).sendKeys(user.getPassword());
-        $("button").click();
-* */

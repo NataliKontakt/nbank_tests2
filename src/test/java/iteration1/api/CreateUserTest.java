@@ -4,6 +4,7 @@ import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,7 +19,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static api.specs.ResponseSpec.*;
-
+@Tag("api")
+@Tag("iteration-1")
 public class CreateUserTest extends BaseTest {
 
     @Test

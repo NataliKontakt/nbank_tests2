@@ -4,6 +4,7 @@ import api.models.CreateUserRequest;
 import api.models.LoginRequest;
 import api.models.LoginResponse;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
@@ -11,7 +12,8 @@ import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
-
+@Tag("api")
+@Tag("iteration-1")
 public class LoginUserTest extends BaseTest {
 
     @Test

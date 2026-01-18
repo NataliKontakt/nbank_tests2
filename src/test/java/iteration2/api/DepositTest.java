@@ -18,7 +18,8 @@ import org.junit.jupiter.api.*;
 
 import static api.specs.ResponseSpec.errorDepositCannotExceed_5000;
 import static api.specs.ResponseSpec.errorDepositLessZero;
-
+@Tag("api")
+@Tag("iteration-2")
 public class DepositTest extends BaseTest {
     CreateUserRequest user1;
     CustomerAccountsResponse customerAccounts;

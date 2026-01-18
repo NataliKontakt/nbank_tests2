@@ -4,15 +4,18 @@ import api.models.Account;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.models.CustomerAccountsResponse;
-import org.junit.jupiter.api.Test;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+@Tag("api")
+@Tag("iteration-1")
 public class CreateAccountTest extends BaseTest {
 
     @Test

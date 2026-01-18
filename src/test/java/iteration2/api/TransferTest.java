@@ -9,6 +9,7 @@ import api.models.CreateUserRequest;
 import api.models.CustomerAccountsResponse;
 import api.models.TransferRequest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
@@ -21,7 +22,8 @@ import java.util.List;
 
 import static api.specs.ResponseSpec.errorInvalidTransfer;
 import static api.specs.ResponseSpec.errorTranslationLessZero;
-
+@Tag("api")
+@Tag("iteration-2")
 public class TransferTest extends BaseTest {
     CreateUserRequest user1;
     CreateUserRequest user2;
