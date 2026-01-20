@@ -24,6 +24,12 @@ public class UserDashboard extends BasePage<UserDashboard>{
 
     public UserDashboard createNewAccount(){
         createNewAccountButton.click();
+        // Добавляем небольшую паузу для синхронизации с API
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         return  this;
     }
 

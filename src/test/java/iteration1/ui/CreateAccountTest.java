@@ -1,6 +1,6 @@
 package iteration1.ui;
 
-import api.models.CreateAccountResponse;
+import api.models.Account;
 import common.annotations.Browsers;
 import common.annotations.Platforms;
 import common.annotations.UserSession;
@@ -29,8 +29,8 @@ public class CreateAccountTest extends BaseUiTest {
             new UserDashboard().open().createNewAccount();
         });
 
-        List<CreateAccountResponse> createdAccounts = SessionStorage.getSteps()
-                .getAllCreatedAccounts();
+        List<Account> createdAccounts = SessionStorage.getSteps()
+                .getAllAccounts();
         step("Проверка, что аккаунт создался на UI", () -> {
             new UserDashboard().checkAlertMessageAndAccept(BankAlert.NEW_ACCOUNT_CREATED.getMessage(),
                     createdAccounts.getFirst().getAccountNumber());
