@@ -21,11 +21,12 @@ public class DepositPage extends BasePage<DepositPage>{
     }
 
     private void deposit(String accountNumber, float deposit) {
+        String formattedDeposit = String.format(Locale.US, "%.2f", deposit);
         selectAccount.click();
         if (accountNumber != null && !accountNumber.isEmpty()) {
             $(Selectors.byText(accountNumber)).click();
         }
-        enterAmountInput.sendKeys(String.valueOf(deposit));
+        enterAmountInput.sendKeys(formattedDeposit);
         depositButton.click();
     }
 
