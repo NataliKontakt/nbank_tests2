@@ -30,6 +30,7 @@ public class BaseUiTest extends BaseTest {
         Configuration.browserSize = Config.getProperty("browserSize");
         String platform = Config.getProperty("platform");
         System.setProperty("platform", platform);
+        //Configuration.headless = true;
         Configuration.browserCapabilities.setCapability("selenoid:options",
                 Map.of("enableVNC", true, "enableLog", true)
         );
