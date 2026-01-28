@@ -1,5 +1,7 @@
 package iteration1.api;
 
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.models.Account;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
@@ -7,6 +9,7 @@ import api.models.CustomerAccountsResponse;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
+import api.requests.steps.DataBaseSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import org.junit.jupiter.api.Tag;
@@ -24,7 +27,7 @@ public class CreateAccountTest extends BaseTest {
         CreateUserRequest user1 = AdminSteps.createUser();
 
         // создаем аккаунт(счет)
-        CreateAccountResponse response =  new ValidatedCrudRequester<CreateAccountResponse>(
+        CreateAccountResponse response = new ValidatedCrudRequester<CreateAccountResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.ACCOUNTS,
                 ResponseSpec.entityWasCreatad())
@@ -41,6 +44,10 @@ public class CreateAccountTest extends BaseTest {
 
         List<Account> accounts = customerProfile.getAccounts();
         softly.assertThat(accountNumber).isEqualTo(accounts.getFirst().getAccountNumber());
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(response.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(response, accountDao).match();
 
     }
 }

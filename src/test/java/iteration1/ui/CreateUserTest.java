@@ -39,6 +39,7 @@ public class CreateUserTest extends BaseUiTest {
                     .filter(user -> user.getUsername().equals(newUser.getUsername()))
                     .findFirst().get();
             ModelAssertions.assertThatModels(newUser, createdUser).match();
+
         });
     }
 
