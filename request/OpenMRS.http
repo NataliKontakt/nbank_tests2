@@ -1,0 +1,63 @@
+### 1. Логин (setup)
+GET http://localhost/openmrs/ws/rest/v1/session
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+### 2. Создание юзера (с ролью доктор)
+POST http://localhost/openmrs/ws/rest/v1/user
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+  "username": "Petr",
+  "password": "!11IvanovII",
+  "systemId": "petya",
+  "person": {
+    "names": [
+      {
+        "givenName": "Minimal",
+        "familyName": "User"
+      }
+    ],
+    "gender": "O"
+  },
+  "roles": [
+    {
+      "uuid": "4ef1f0f9-fee6-414b-910d-28e17df345c2"
+    }
+  ]
+}
+
+### 3. Получить список юзеров
+GET  http://localhost/openmrs/admin/users/users.list?name=&role=&action=admin
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+
+### 4. Получить список ролей
+GET  http://localhost/openmrs/admin/users/role.list
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+
+### 4. Создаать пациента
+POST http://localhost/openmrs/ws/rest/v1/person
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Content-Type: application/json
+//Set-Cookie: JSESSIONID=C22BF5EFE0DC89FD8C3B08E8A09A6939; Path=/openmrs; HttpOnly
+Accept: application/json
+
+{
+    "names": [
+        {
+        "givenName": "Mohitн",
+        "familyName": "Kumar"
+        }
+    ],
+    "gender": "M",
+    "birthdate": "1997-09-02"
+}
+
