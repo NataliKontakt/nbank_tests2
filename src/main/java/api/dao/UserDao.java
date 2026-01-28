@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserDao {
+public class UserDao extends BaseDao{
     private Long id;
     private String username;
     private String password;

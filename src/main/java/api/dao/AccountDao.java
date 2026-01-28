@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AccountDao {
+public class AccountDao extends BaseDao{
     private Long id;
     private String accountNumber;
     private Float balance;
