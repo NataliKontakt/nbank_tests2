@@ -35,13 +35,13 @@ Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 4.  Поиск Person по UUID -> 200
+### 2.  Поиск Person по UUID -> 200
 GET http://localhost/openmrs/ws/rest/v1/person/{uuid}
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 5.  Создание минимального Person (только имена + gender) -> 201
+### 3.  Создание минимального Person (только имена + gender) -> 201
 POST http://localhost/openmrs/ws/rest/v1/person
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -58,7 +58,7 @@ Accept: application/json
   "gender": "O"
 }
 
-### 6.  Создание Person с birthdate, estimated age, addresses, attributes -> 201
+### 4.  Создание Person с birthdate, estimated age, addresses, attributes -> 201
 POST http://localhost/openmrs/ws/rest/v1/person
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -84,7 +84,7 @@ Accept: application/json
   }]
 }
 
-### 7.  Создание Person Negative: создание без gender -> 400
+### 5.  Создание Person Negative: создание без gender -> 400
 POST http://localhost/openmrs/ws/rest/v1/person
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -99,74 +99,74 @@ Accept: application/json
   ]
 }
 
-### 7.  Создание Person Negative: создание без хотя бы одного имени -> 400
+### 6.  Создание Person Negative: создание без хотя бы одного имени -> 400
 POST http://localhost/openmrs/ws/rest/v1/person
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 8.  Создание Person Negative: создание с одинаковым именем -> 400
+### 7.  Создание Person Negative: создание с одинаковым именем -> 400
 POST http://localhost/openmrs/ws/rest/v1/person
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
 
-### 9.  Создание Person Negative: некорректный gender (не M/F/O) -> 400
+### 8.  Создание Person Negative: некорректный gender (не M/F/O) -> 400
 POST http://localhost/openmrs/ws/rest/v1/person
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 10.  Создание Person Negative: birthdate в будущем -> 400
+### 9.  Создание Person Negative: birthdate в будущем -> 400
 POST http://localhost/openmrs/ws/rest/v1/person
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 11.  Обновление gender, birthdate, dead=true + deathDate -> 200
+### 10.  Обновление gender, birthdate, dead=true + deathDate -> 200
 PUT http://localhost/openmrs/ws/rest/v1/person/{uuid}
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 12.  Обновление частичное, только birthdate -> 200
+### 11.  Обновление частичное, только birthdate -> 200
 PUT http://localhost/openmrs/ws/rest/v1/person/{uuid}
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 13.  Удаление полное, из БД (если на основе person создан пациент, нельзя удалить) -> 204
+### 12.  Удаление полное, из БД (если на основе person создан пациент, нельзя удалить) -> 204
 DELETE http://localhost/openmrs/ws/rest/v1/person/{uuid}?purge=true
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 14.  Удаление частичное (пометка об удалении, но из БД не удаляется) -> 200 или 204
+### 13.  Удаление частичное (пометка об удалении, но из БД не удаляется) -> 200 или 204
 DELETE http://localhost/openmrs/ws/rest/v1/person/{uuid}
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 15.  Добавление дополнительного имени (non-preferred) -> 200
+### 14.  Добавление дополнительного имени (non-preferred) -> 200
 POST http://localhost/openmrs/ws/rest/v1/person/{uuid}/name
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 16.  Добавление адреса (address1, cityVillage, country и т.д.) -> 201
+### 15.  Добавление адреса (address1, cityVillage, country и т.д.) -> 201
 POST http://localhost/openmrs/ws/rest/v1/person/{uuid}/address
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 17.  Добавление кастомного атрибута (например, "Telephone number") -> 201
+### 16.  Добавление кастомного атрибута (например, "Telephone number") -> 201
 POST http://localhost/openmrs/ws/rest/v1/person/{uuid}/attribute
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### 18. Список всех атрибутов Person -> 200
+### 17. Список всех атрибутов Person -> 200
 GET http://localhost/openmrs/ws/rest/v1/person/{uuid}/attribute
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
