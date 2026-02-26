@@ -32,13 +32,11 @@ public class DepositTest extends BaseTest {
 
     @BeforeEach
     public void prepareData(TestInfo testInfo) {
-        //создание объекта пользователя
         user1 = AdminSteps.createUser();
         userSteps = new UserSteps(user1.getUsername(), user1.getPassword());
-        // создаем аккаунт(счет)
         userSteps.createAccount();
 
-        //через гет получаем номер аккаунта
+
         customerAccounts = userSteps.getAccount();
 
         id = customerAccounts.getAccounts().getFirst().getId();
