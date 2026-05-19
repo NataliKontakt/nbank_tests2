@@ -279,7 +279,7 @@ public class TransferTest extends BaseTest {
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
-                ResponseSpec.requestReturnsBadRequest(errorTranslationLessZero))
+                ResponseSpec.requestReturnsBadRequest(errorInvalidTransfer))
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым
@@ -320,7 +320,7 @@ public class TransferTest extends BaseTest {
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.TRANSFER,
-                ResponseSpec.requestReturnsBadRequest(errorTranslationLessZero))
+                ResponseSpec.requestReturnsBadRequest(errorInvalidTransfer))
                 .post(transferRequest);
 
         //через гет получаем новый баланс и сверяем с ожидаемым

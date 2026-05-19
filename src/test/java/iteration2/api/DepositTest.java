@@ -16,8 +16,8 @@ import api.specs.ResponseSpec;
 import iteration1.api.BaseTest;
 import org.junit.jupiter.api.*;
 
-import static api.specs.ResponseSpec.errorDepositCannotExceed_5000;
-import static api.specs.ResponseSpec.errorDepositLessZero;
+import static api.specs.ResponseSpec.*;
+
 @Tag("api")
 @Tag("iteration-2")
 public class DepositTest extends BaseTest {
@@ -111,7 +111,7 @@ public class DepositTest extends BaseTest {
 
         new CrudRequester(RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.DEPOSIT,
-                ResponseSpec.requestReturnsBadRequest(errorDepositLessZero))
+                ResponseSpec.requestReturnsBadRequest(errorInvalidAccountOrAmount))
                 .post(depositRequest);
 
     }
