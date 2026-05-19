@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Condition {
+    // where column   operator value
+    // where username    =     "Alex"
     private String column;
     private Object value;
     private String operator;

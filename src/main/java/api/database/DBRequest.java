@@ -24,12 +24,12 @@ public class DBRequest {
 
     public <T> T extractAs(Class<T> clazz) {
         this.extractAsClass = clazz;
-        return executeQuery(clazz);
+        return executeQuery(clazz); //исполняется SQL запрос
     }
 
     private <T> T executeQuery(Class<T> clazz) {
-        String sql = buildSQL();
-
+        String sql = buildSQL(); //составляем запрос
+        //Устанавливаем соединение с БД, производится несколько попыток
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -39,6 +39,8 @@ public class DBRequest {
                     statement.setObject(i + 1, conditions.get(i).getValue());
                 }
             }
+
+            //результат запроса маппится в соответствующий класс
 //TODO: сделать масштабирование маппинга (26-я минута)
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (clazz == UserDao.class) {
@@ -133,7 +135,7 @@ public class DBRequest {
             this.table = table;
             return this;
         }
-
+// результат этого билдера - SQL запрос
         public <T> T extractAs(Class<T> clazz) {
             this.extractAsClass = clazz;
             DBRequest request = DBRequest.builder()

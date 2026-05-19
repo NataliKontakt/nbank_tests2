@@ -70,7 +70,7 @@ public class DataBaseSteps {
         return StepLogger.log("Get account from database by ID: " + id, () -> {
             return DBRequest.builder()
                     .requestType(DBRequest.RequestType.SELECT)
-                    .table("accounts")
+                    .table(Table.ACCOUNTS.getName())
                     .where(Condition.equalTo("id", id))
                     .extractAs(AccountDao.class);
         });
@@ -80,7 +80,7 @@ public class DataBaseSteps {
         return StepLogger.log("Get account from database by customer ID: " + customerId, () -> {
             return DBRequest.builder()
                     .requestType(DBRequest.RequestType.SELECT)
-                    .table("customers")
+                    .table(Table.CUSTOMERS.getName())
                     .where(Condition.equalTo("customer_id", customerId))
                     .extractAs(AccountDao.class);
         });

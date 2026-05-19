@@ -1,5 +1,6 @@
 package api.dao.comparison;
 
+import api.dao.BaseDao;
 import api.models.BaseModel;
 import org.assertj.core.api.AbstractAssert;
 
@@ -7,15 +8,15 @@ public class DaoAndModelAssertions {
 
     private static final DaoComparator daoComparator = new DaoComparator();
 
-    public static DaoModelAssert assertThat(BaseModel apiModel, Object daoModel) {
+    public static DaoModelAssert assertThat(BaseModel apiModel, BaseDao daoModel) {
         return new DaoModelAssert(apiModel, daoModel);
     }
 
     public static class DaoModelAssert extends AbstractAssert<DaoModelAssert, Object> {
         private final BaseModel apiModel;
-        private final Object daoModel;
+        private final BaseDao daoModel;
 
-        public DaoModelAssert(BaseModel apiModel, Object daoModel) {
+        public DaoModelAssert(BaseModel apiModel, BaseDao daoModel) {
             super(apiModel, DaoModelAssert.class);
             this.apiModel = apiModel;
             this.daoModel = daoModel;
