@@ -43,7 +43,7 @@ public class CreateUserTest extends BaseTest {
 
 
         UserDao userDao = DataBaseSteps.getUserByUsername(user1.getUsername());
-        DaoAndModelAssertions.assertThat(user1, userDao).match();
+        DaoAndModelAssertions.assertThat(actualUser, userDao).match();
     }
 
     public static Stream<Arguments> userInvalidData() {
