@@ -1,6 +1,7 @@
 package api.database;
 
 import api.configs.Config;
+import api.dao.CountDao;
 import api.dao.UserDao;
 import api.dao.AccountDao;
 import lombok.Builder;
@@ -17,6 +18,7 @@ public class DBRequest {
     private String table;
     private List<Condition> conditions;
     private Class<?> extractAsClass;
+    private boolean count;
 
     public enum RequestType {
         SELECT, INSERT, UPDATE, DELETE
@@ -48,6 +50,9 @@ public class DBRequest {
                 }
                 if (clazz == AccountDao.class) {
                     return (T) mapToAccountDao(resultSet);
+                }
+                if (clazz == CountDao.class) {           // ← добавь это
+                    return (T) mapToCountDao(resultSet);
                 }
                 // Add more mappings as needed
                 throw new UnsupportedOperationException("Mapping for " + clazz.getSimpleName() + " not implemented");
@@ -82,12 +87,25 @@ public class DBRequest {
         return null;
     }
 
+    private CountDao mapToCountDao(ResultSet resultSet) throws SQLException {
+        if (resultSet.next()) {
+            return CountDao.builder()
+                    .count(resultSet.getInt("count"))   // или getLong(1), если алиас не нравится
+                    .build();
+        }
+        return null;
+    }
+
     private String buildSQL() {
         StringBuilder sql = new StringBuilder();
 
         switch (requestType) {
             case SELECT:
-                sql.append("SELECT * FROM ").append(table);
+                if (count) {
+                    sql.append("SELECT COUNT(*) as count FROM ").append(table);
+                } else {
+                    sql.append("SELECT * FROM ").append(table);
+                }
                 if (conditions != null && !conditions.isEmpty()) {
                     sql.append(" WHERE ");
                     for (int i = 0; i < conditions.size(); i++) {
@@ -120,6 +138,7 @@ public class DBRequest {
         private String table;
         private List<Condition> conditions = new ArrayList<>();
         private Class<?> extractAsClass;
+        private Boolean count = false;
 
         public DBRequestBuilder requestType(RequestType requestType) {
             this.requestType = requestType;
@@ -135,6 +154,11 @@ public class DBRequest {
             this.table = table;
             return this;
         }
+
+        public DBRequestBuilder count(boolean count) {
+            this.count = count;
+            return this;
+        }
 // результат этого билдера - SQL запрос
         public <T> T extractAs(Class<T> clazz) {
             this.extractAsClass = clazz;
@@ -143,6 +167,7 @@ public class DBRequest {
                     .table(table)
                     .conditions(conditions)
                     .extractAsClass(extractAsClass)
+                    .count(count)
                     .build();
             return request.extractAs(clazz);
         }

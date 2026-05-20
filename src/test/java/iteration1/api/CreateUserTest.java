@@ -1,5 +1,6 @@
 package iteration1.api;
 
+import api.dao.CountDao;
 import api.dao.UserDao;
 import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
@@ -98,7 +99,7 @@ public class CreateUserTest extends BaseTest {
     @MethodSource("userInvalidData")
     @ParameterizedTest
     public void adminCanNotCreateUserWithInvalidData(String username, String password, String role, String errorKey, List<String> errorValue) {
-
+        CountDao userRowsExpected = DataBaseSteps.countRowsOfTable(DataBaseSteps.Table.CUSTOMERS);
         //создание объекта пользователя
         CreateUserRequest user1 = CreateUserRequest.builder()
                 .username(username)
@@ -112,5 +113,8 @@ public class CreateUserTest extends BaseTest {
                 Endpoint.ADMIN_USER,
                 ResponseSpec.requestReturnsBadRequest(errorKey, errorValue))
                 .post(user1);
+
+        CountDao userRowsActual = DataBaseSteps.countRowsOfTable(DataBaseSteps.Table.CUSTOMERS);
+        softly.assertThat(userRowsActual).isEqualTo(userRowsExpected);
     }
 }

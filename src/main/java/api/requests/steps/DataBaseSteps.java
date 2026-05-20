@@ -1,5 +1,6 @@
 package api.requests.steps;
 
+import api.dao.CountDao;
 import api.database.Condition;
 import api.database.DBRequest;
 import api.dao.UserDao;
@@ -84,6 +85,15 @@ public class DataBaseSteps {
                     .where(Condition.equalTo("customer_id", customerId))
                     .extractAs(AccountDao.class);
         });
+    }
+
+    // Count
+    public static CountDao countRowsOfTable(Table table) {
+        return DBRequest.builder()
+                .requestType(DBRequest.RequestType.SELECT)
+                .table(table.getName())
+                .count(true)
+                .extractAs(CountDao.class);
     }
 
     public static void updateAccountBalance(Long accountId, Double newBalance) {
