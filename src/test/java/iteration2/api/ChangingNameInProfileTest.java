@@ -89,5 +89,8 @@ public class ChangingNameInProfileTest extends BaseTest {
 
         softly.assertThat(customerProfile.getName()).isNull();
 
+        UserDao userDao = DataBaseSteps.getUserByUsername(user1.getUsername());
+        softly.assertThat(userDao.getName()).isNull();
+
     }
 }
