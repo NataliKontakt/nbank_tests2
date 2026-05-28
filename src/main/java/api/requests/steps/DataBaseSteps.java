@@ -16,7 +16,8 @@ import java.sql.SQLException;
 public class DataBaseSteps {
     public enum Table {
         CUSTOMERS("customers"),
-        ACCOUNTS("accounts");
+        ACCOUNTS("accounts"),
+        TRANSACTIONS("transactions");
         Table(String name) {
             this.name = name;
         }
@@ -87,6 +88,16 @@ public class DataBaseSteps {
         });
     }
 
+    public static AccountDao getDepositByAccountNumber(String accountNumber) {
+        return StepLogger.log("Get deposit from database from account ID: " + accountNumber, () -> {
+            return DBRequest.builder()
+                    .requestType(DBRequest.RequestType.SELECT)
+                    .table(Table.ACCOUNTS.getName())
+                    .where(Condition.equalTo("account_number", accountNumber))
+                    .extractAs(AccountDao.class);
+        });
+    }
+
     // Count
     public static CountDao countRowsOfTable(Table table) {
         return DBRequest.builder()
@@ -95,6 +106,7 @@ public class DataBaseSteps {
                 .count(true)
                 .extractAs(CountDao.class);
     }
+
 
     public static void updateAccountBalance(Long accountId, Double newBalance) {
         StepLogger.log("Update account balance in database for account ID: " + accountId + " to: " + newBalance, () -> {
