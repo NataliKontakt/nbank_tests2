@@ -1,9 +1,6 @@
 package api.database;
 
 import api.configs.Config;
-import api.dao.CountDao;
-import api.dao.UserDao;
-import api.dao.AccountDao;
 import lombok.Builder;
 import lombok.Data;
 
@@ -30,70 +27,27 @@ public class DBRequest {
     }
 
     private <T> T executeQuery(Class<T> clazz) {
-        String sql = buildSQL(); //составляем запрос
-        //Устанавливаем соединение с БД, производится несколько попыток
+        String sql = buildSQL();
+
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            // Set parameters for conditions
-            if (conditions != null) {
-                for (int i = 0; i < conditions.size(); i++) {
-                    statement.setObject(i + 1, conditions.get(i).getValue());
-                }
-            }
+            setParameters(statement);
 
-            //результат запроса маппится в соответствующий класс
-//TODO: сделать масштабирование маппинга (26-я минута)
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (clazz == UserDao.class) {
-                    return (T) mapToUserDao(resultSet);
-                }
-                if (clazz == AccountDao.class) {
-                    return (T) mapToAccountDao(resultSet);
-                }
-                if (clazz == CountDao.class) {           // ← добавь это
-                    return (T) mapToCountDao(resultSet);
-                }
-                // Add more mappings as needed
-                throw new UnsupportedOperationException("Mapping for " + clazz.getSimpleName() + " not implemented");
+                return ResultSetMapper.map(resultSet, clazz);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Database query failed", e);
         }
     }
 
-    private UserDao mapToUserDao(ResultSet resultSet) throws SQLException {
-        if (resultSet.next()) {
-            return UserDao.builder()
-                    .id(resultSet.getLong("id"))
-                    .username(resultSet.getString("username"))
-                    .password(resultSet.getString("password"))
-                    .role(resultSet.getString("role"))
-                    .name(resultSet.getString("name"))
-                    .build();
+    private void setParameters(PreparedStatement statement) throws SQLException {
+        if (conditions != null) {
+            for (int i = 0; i < conditions.size(); i++) {
+                statement.setObject(i + 1, conditions.get(i).getValue());
+            }
         }
-        return null;
-    }
-
-    private AccountDao mapToAccountDao(ResultSet resultSet) throws SQLException {
-        if (resultSet.next()) {
-            return AccountDao.builder()
-                    .id(resultSet.getLong("id"))
-                    .accountNumber(resultSet.getString("account_number"))
-                    .balance(resultSet.getFloat("balance"))
-                    .customerId(resultSet.getLong("customer_id"))
-                    .build();
-        }
-        return null;
-    }
-
-    private CountDao mapToCountDao(ResultSet resultSet) throws SQLException {
-        if (resultSet.next()) {
-            return CountDao.builder()
-                    .count(resultSet.getInt("count"))   // или getLong(1), если алиас не нравится
-                    .build();
-        }
-        return null;
     }
 
     private String buildSQL() {
