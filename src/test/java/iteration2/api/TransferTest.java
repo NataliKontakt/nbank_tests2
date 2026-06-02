@@ -1,8 +1,11 @@
 package iteration2.api;
 
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.MoneyMath;
 import api.generators.RandomData;
 import api.generators.RandomModelGenerator;
+import api.requests.steps.DataBaseSteps;
 import iteration1.api.BaseTest;
 import api.models.Account;
 import api.models.CreateUserRequest;
@@ -19,6 +22,7 @@ import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 
 import java.util.List;
+import java.util.Optional;
 
 import static api.specs.ResponseSpec.errorInvalidTransfer;
 import static api.specs.ResponseSpec.errorTranslationLessZero;
@@ -91,16 +95,24 @@ public class TransferTest extends BaseTest {
         float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
         float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
-        softly.assertThat(response.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(expectedBalance1);
+        Account actualAccount1 = response.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
 
-        softly.assertThat(response.getAccounts())
-                .filteredOn(account -> account.getId() == id2)
-                .extracting(Account::getBalance)
-                .containsExactly(expectedBalance2);
+        Account actualAccount2 = response.getAccounts().stream()
+                .filter(account -> account.getId() == id2)
+                .findFirst()
+                .orElse(null);
 
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(expectedBalance1);
+        softly.assertThat(actualAccount2.getBalance()).isEqualTo(expectedBalance2);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        AccountDao accountDao2 = DataBaseSteps.getAccountById(id2);
+
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
+        DaoAndModelAssertions.assertThat(actualAccount2, accountDao2).match();
     }
 
     @Test
@@ -136,15 +148,24 @@ public class TransferTest extends BaseTest {
         float expectedBalance1 = MoneyMath.subtract(deposit1, transfer);
         float expectedBalance2 = MoneyMath.add(deposit2, transfer);
 
-        softly.assertThat(response1.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(expectedBalance1);
+        Account actualAccount1 = response1.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
 
-        softly.assertThat(response2.getAccounts())
-                .filteredOn(account -> account.getId() == id2)
-                .extracting(Account::getBalance)
-                .containsExactly(expectedBalance2);
+        Account actualAccount2 = response2.getAccounts().stream()
+                .filter(account -> account.getId() == id2)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(expectedBalance1);
+        softly.assertThat(actualAccount2.getBalance()).isEqualTo(expectedBalance2);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        AccountDao accountDao2 = DataBaseSteps.getAccountById(id2);
+
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
+        DaoAndModelAssertions.assertThat(actualAccount2, accountDao2).match();
     }
 
     @Test
@@ -165,11 +186,16 @@ public class TransferTest extends BaseTest {
         //через гет получаем новый баланс и сверяем с ожидаемым
         CustomerAccountsResponse response1 = userSteps.getAccount();
 
-        softly.assertThat(response1.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response1.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
 
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
     }
 
     @Test
@@ -202,15 +228,25 @@ public class TransferTest extends BaseTest {
         //через гет получаем новый баланс и сверяем с ожидаемым
         CustomerAccountsResponse response = userSteps.getAccount();
 
-        softly.assertThat(response.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
 
-        softly.assertThat(response.getAccounts())
-                .filteredOn(account -> account.getId() == id2)
-                .extracting(Account::getBalance)
-                .containsExactly(balance2);
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        Account actualAccount2 = response.getAccounts().stream()
+                .filter(account -> account.getId() == id2)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount2.getBalance()).isEqualTo(balance2);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
+
+        AccountDao accountDao2 = DataBaseSteps.getAccountById(id2);
+        DaoAndModelAssertions.assertThat(actualAccount2, accountDao2).match();
     }
 
     @Test
@@ -244,15 +280,26 @@ public class TransferTest extends BaseTest {
 
         CustomerAccountsResponse response2 = userSteps2.getAccount();
 
-        softly.assertThat(response1.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response1.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
 
-        softly.assertThat(response2.getAccounts())
-                .filteredOn(account -> account.getId() == id2)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit2);
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        Account actualAccount2 = response2.getAccounts().stream()
+                .filter(account -> account.getId() == id2)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount2.getBalance()).isEqualTo(deposit2);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
+
+        AccountDao accountDao2 = DataBaseSteps.getAccountById(id2);
+        DaoAndModelAssertions.assertThat(actualAccount2, accountDao2).match();
+
     }
 
     @Test
@@ -285,15 +332,25 @@ public class TransferTest extends BaseTest {
         //через гет получаем новый баланс и сверяем с ожидаемым
         CustomerAccountsResponse response = userSteps.getAccount();
 
-        softly.assertThat(response.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
 
-        softly.assertThat(response.getAccounts())
-                .filteredOn(account -> account.getId() == id2)
-                .extracting(Account::getBalance)
-                .containsExactly(balance2);
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        Account actualAccount2 = response.getAccounts().stream()
+                .filter(account -> account.getId() == id2)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount2.getBalance()).isEqualTo(balance2);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
+
+        AccountDao accountDao2 = DataBaseSteps.getAccountById(id2);
+        DaoAndModelAssertions.assertThat(actualAccount2, accountDao2).match();
     }
 
     @Test
@@ -328,15 +385,25 @@ public class TransferTest extends BaseTest {
 
         CustomerAccountsResponse response2 = userSteps2.getAccount();
 
-        softly.assertThat(response1.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response1.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
 
-        softly.assertThat(response2.getAccounts())
-                .filteredOn(account -> account.getId() == id2)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit2);
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        Account actualAccount2 = response2.getAccounts().stream()
+                .filter(account -> account.getId() == id2)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount2.getBalance()).isEqualTo(deposit2);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
+
+        AccountDao accountDao2 = DataBaseSteps.getAccountById(id2);
+        DaoAndModelAssertions.assertThat(actualAccount2, accountDao2).match();
     }
 
     @Test
@@ -355,10 +422,15 @@ public class TransferTest extends BaseTest {
         //через гет получаем новый баланс и сверяем с ожидаемым
         CustomerAccountsResponse response1 = userSteps.getAccount();
 
-        softly.assertThat(response1.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response1.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
     }
 
     @Test
@@ -377,10 +449,15 @@ public class TransferTest extends BaseTest {
         //через гет получаем новый баланс и сверяем с ожидаемым
         CustomerAccountsResponse response1 = userSteps.getAccount();
 
-        softly.assertThat(response1.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response1.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
     }
 
     @Test
@@ -414,10 +491,15 @@ public class TransferTest extends BaseTest {
         //через гет получаем новый баланс и сверяем с ожидаемым
         CustomerAccountsResponse response1 = userSteps.getAccount();
 
-        softly.assertThat(response1.getAccounts())
-                .filteredOn(account -> account.getId() == id1)
-                .extracting(Account::getBalance)
-                .containsExactly(deposit1);
+        Account actualAccount1 = response1.getAccounts().stream()
+                .filter(account -> account.getId() == id1)
+                .findFirst()
+                .orElse(null);
+
+        softly.assertThat(actualAccount1.getBalance()).isEqualTo(deposit1);
+
+        AccountDao accountDao1 = DataBaseSteps.getAccountById(id1);
+        DaoAndModelAssertions.assertThat(actualAccount1, accountDao1).match();
 
     }
 
