@@ -1,5 +1,7 @@
 package iteration2.api;
 
+import api.dao.UserDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
 import api.models.CustomerProfileResponse;
@@ -10,6 +12,7 @@ import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
+import api.requests.steps.DataBaseSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import iteration1.api.BaseTest;
@@ -31,13 +34,13 @@ public class ChangingNameInProfileTest extends BaseTest {
     public void userCanChangeNameInProfileTest() {
         //создание объекта пользователя
         CreateUserRequest user1 = AdminSteps.createUser();
-
+        UpdateProfileRequest updateProfileRequest = RandomModelGenerator.generate(UpdateProfileRequest.class);
         //Изменяем имя
         UpdateProfileResponse customerProfileRequest = new ValidatedCrudRequester<UpdateProfileResponse>(
                 RequestSpec.authSpec(user1.getUsername(), user1.getPassword()),
                 Endpoint.CUSTOMER_PROFILE_UPDATE,
                 ResponseSpec.requestReturnsOk())
-                .update(RandomModelGenerator.generate(UpdateProfileRequest.class));
+                .update(updateProfileRequest);
 
         //Проверяем, что новое имя сохранилось
         CustomerProfileResponse customerProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(
@@ -46,6 +49,9 @@ public class ChangingNameInProfileTest extends BaseTest {
                 ResponseSpec.requestReturnsOk())
                 .get();
         ModelAssertions.assertThatModels(customerProfileRequest, customerProfileResponse).match();
+
+        UserDao userDao = DataBaseSteps.getUserByUsername(user1.getUsername());
+        DaoAndModelAssertions.assertThat(updateProfileRequest, userDao).match();
     }
 
     public static Stream<Arguments> userInvalidName() {
@@ -82,6 +88,9 @@ public class ChangingNameInProfileTest extends BaseTest {
                 .get();
 
         softly.assertThat(customerProfile.getName()).isNull();
+
+        UserDao userDao = DataBaseSteps.getUserByUsername(user1.getUsername());
+        softly.assertThat(userDao.getName()).isNull();
 
     }
 }

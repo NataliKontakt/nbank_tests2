@@ -1,9 +1,13 @@
 package iteration1.api;
 
+import api.dao.CountDao;
+import api.dao.UserDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
+import api.requests.steps.DataBaseSteps;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,6 +41,10 @@ public class CreateUserTest extends BaseTest {
                 .post(user1);
 
         ModelAssertions.assertThatModels(user1,actualUser).match();
+
+
+        UserDao userDao = DataBaseSteps.getUserByUsername(user1.getUsername());
+        DaoAndModelAssertions.assertThat(actualUser, userDao).match();
     }
 
     public static Stream<Arguments> userInvalidData() {
@@ -91,7 +99,7 @@ public class CreateUserTest extends BaseTest {
     @MethodSource("userInvalidData")
     @ParameterizedTest
     public void adminCanNotCreateUserWithInvalidData(String username, String password, String role, String errorKey, List<String> errorValue) {
-
+        CountDao userRowsExpected = DataBaseSteps.countRowsOfTable(DataBaseSteps.Table.CUSTOMERS);
         //создание объекта пользователя
         CreateUserRequest user1 = CreateUserRequest.builder()
                 .username(username)
@@ -105,5 +113,8 @@ public class CreateUserTest extends BaseTest {
                 Endpoint.ADMIN_USER,
                 ResponseSpec.requestReturnsBadRequest(errorKey, errorValue))
                 .post(user1);
+
+        CountDao userRowsActual = DataBaseSteps.countRowsOfTable(DataBaseSteps.Table.CUSTOMERS);
+        softly.assertThat(userRowsActual).isEqualTo(userRowsExpected);
     }
 }

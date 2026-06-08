@@ -119,5 +119,10 @@
             <version>1.9.22</version>  <!-- или 1.9.23+ если найдёшь -->
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.2</version> <!-- или актуальная версия -->
+        </dependency>
     </dependencies>
 </project>

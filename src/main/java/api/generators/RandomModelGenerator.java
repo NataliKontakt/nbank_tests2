@@ -124,7 +124,8 @@ public class RandomModelGenerator {
         } else if (type.equals(Double.class) || type.equals(double.class)) {
             return random.nextDouble() * 100;
         } else if (type.equals(Float.class) || type.equals(float.class)) {
-            return random.nextFloat() * 100;
+            double value = random.nextDouble() * 100;
+            return (float) Math.round(value * 100) / 100;
         } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
             return random.nextBoolean();
         } else if (type.equals(List.class)) {
